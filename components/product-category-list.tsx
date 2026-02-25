@@ -50,7 +50,7 @@ const categories = [
   },
   {
     id: "cowpeas",
-    name: "Cowpeas",
+    name: "African Traditional Peas",
     description: "Early maturing cowpea varieties with resistance to pests and diseases",
     image: "/images/cowpeas.jpg",
     products: cowpeaProducts,
