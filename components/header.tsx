@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation" // Import usePathname
 import { Button } from "@/components/ui/button"
 import { Menu, X, ChevronDown, ShoppingCart } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -11,6 +12,16 @@ import { useCart } from "@/lib/cart-context"
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { itemCount } = useCart()
+  const pathname = usePathname() // Initialize pathname
+
+  // Helper to determine if a link is active
+  const isActive = (path: string) => pathname === path
+  const isParentActive = (path: string) => pathname.startsWith(path)
+
+  // Standard link styling
+  const navLinkStyles = "px-3 py-2 transition-colors border-b-2"
+  const activeStyles = "text-green-700 border-green-700"
+  const inactiveStyles = "text-gray-700 hover:text-green-700 border-transparent"
 
   return (
     <header className="bg-white border-b sticky top-0 z-50">
@@ -24,69 +35,63 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
-            <Link href="/" className="px-3 py-2 text-gray-700 hover:text-green-700">
+          <nav className="hidden md:flex items-center space-x-1 h-full">
+            <Link 
+              href="/" 
+              className={`${navLinkStyles} ${isActive("/") ? activeStyles : inactiveStyles}`}
+            >
               Home
             </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center px-3 py-2 text-gray-700 hover:text-green-700">
+                <Button 
+                  variant="ghost" 
+                  className={`${navLinkStyles} flex items-center rounded-none h-auto ${isParentActive("/products") ? activeStyles : inactiveStyles}`}
+                >
                   Products <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/products/maize">Maize</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/products/wheat">Wheat</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/products/soybeans">Soybeans</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/products/groundnuts">Groundnuts</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/products/sunflower">Sunflower</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/products">All Products</Link>
-                </DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/products/maize">Maize</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/products/wheat">Wheat</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/products/soybeans">Soybeans</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/products/groundnuts">Groundnuts</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/products/sunflower">Sunflower</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/products">All Products</Link></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center px-3 py-2 text-gray-700 hover:text-green-700">
+                <Button 
+                  variant="ghost" 
+                  className={`${navLinkStyles} flex items-center rounded-none h-auto ${isParentActive("/services") ? activeStyles : inactiveStyles}`}
+                >
                   Services <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/services/outgrowing">Outgrowing</Link>
-                </DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/services/outgrowing">Outgrowing</Link></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link href="/agronomy" className="px-3 py-2 text-gray-700 hover:text-green-700">
+            <Link href="/agronomy" className={`${navLinkStyles} ${isActive("/agronomy") ? activeStyles : inactiveStyles}`}>
               Agronomy
             </Link>
-            <Link href="/about" className="px-3 py-2 text-gray-700 hover:text-green-700">
+            <Link href="/about" className={`${navLinkStyles} ${isActive("/about") ? activeStyles : inactiveStyles}`}>
               About Us
             </Link>
-            <Link href="/news" className="px-3 py-2 text-gray-700 hover:text-green-700">
+            <Link href="/news" className={`${navLinkStyles} ${isActive("/news") ? activeStyles : inactiveStyles}`}>
               News
             </Link>
-            <Link href="/contact" className="px-3 py-2 text-gray-700 hover:text-green-700">
+            <Link href="/contact" className={`${navLinkStyles} ${isActive("/contact") ? activeStyles : inactiveStyles}`}>
               Contact
             </Link>
           </nav>
 
           {/* Action Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Cart icon with badge */}
             <Link
               href="/cart"
               className="relative p-2 text-gray-600 hover:text-green-700 transition-colors"
@@ -105,17 +110,13 @@ export default function Header() {
             </Button>
           </div>
 
-          {/* Mobile: cart icon + hamburger */}
+          {/* Mobile Menu Toggle */}
           <div className="md:hidden flex items-center gap-2">
-            <Link
-              href="/cart"
-              className="relative p-2 text-gray-600 hover:text-green-700 transition-colors"
-              aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
-            >
+            <Link href="/cart" className="relative p-2 text-gray-600">
               <ShoppingCart className="h-6 w-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-green-700 text-white text-xs font-bold flex items-center justify-center leading-none">
-                  {itemCount > 99 ? "99+" : itemCount}
+                <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-green-700 text-white text-xs font-bold flex items-center justify-center">
+                  {itemCount}
                 </span>
               )}
             </Link>
