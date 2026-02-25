@@ -100,7 +100,7 @@ export default function Header() {
               )}
             </Link>
 
-            <Button asChild variant="outline" className="border-green-700 text-green-700 hover:bg-green-50">
+            <Button asChild variant="outline" className="flex-1 bg-green-700 text-white border-green-700 hover:bg-white hover:text-green-700 hover:border-green-700">
               <Link href="/products">Order Seed</Link>
             </Button>
           </div>

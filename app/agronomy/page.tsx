@@ -37,7 +37,7 @@ const plantingGuides = [
     yield: "6-10t/ha",
   },
   {
-    id: "soybeans",
+    id: "soybeanguide",
     title: "Soybean Planting Guide",
     description: "Guidelines for successful soybean cultivation with high protein content and disease resistance",
     icon: Leaf,
@@ -61,7 +61,7 @@ const plantingGuides = [
     yield: "4t/ha pods",
   },
   {
-    id: "sunflower",
+    id: "sunflowerguide",
     title: "Sunflower Planting Guide",
     description: "Growing sunflowers with high oil content (39-45%) for various ecological conditions",
     icon: Leaf,

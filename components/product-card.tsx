@@ -34,10 +34,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="flex space-x-3">
-          <Button asChild className="flex-1 bg-green-700 hover:bg-green-800">
+          <Button asChild variant="outline" className="flex-1 bg-green-700 text-white border-green-700 hover:bg-white hover:text-green-700 hover:border-green-700">
             <Link href={`/products/${product.category}/${product.id}`}>View Details</Link>
           </Button>
-          <Button asChild variant="outline" className="flex-1 border-green-700 text-green-700 hover:bg-green-50">
+          <Button asChild variant="outline" className="flex-1 bg-green-700 text-white border-green-700 hover:bg-white hover:text-green-700 hover:border-green-700">
             <Link href={`/order?product=${product.id}`}>Order Seed</Link>
           </Button>
         </div>
