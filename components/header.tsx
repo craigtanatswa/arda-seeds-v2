@@ -85,6 +85,9 @@ export default function Header() {
             <Link href="/news" className={`${navLinkStyles} ${isActive("/news") ? activeStyles : inactiveStyles}`}>
               News
             </Link>
+            <Link href="/careers" className={`${navLinkStyles} ${isActive("/careers") ? activeStyles : inactiveStyles}`}>
+              Careers
+            </Link>
             <Link href="/contact" className={`${navLinkStyles} ${isActive("/contact") ? activeStyles : inactiveStyles}`}>
               Contact
             </Link>
@@ -214,6 +217,13 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 News
+              </Link>
+              <Link
+                href="/careers"
+                className="px-3 py-2 text-gray-700 hover:text-green-700"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Careers
               </Link>
               <Link
                 href="/contact"

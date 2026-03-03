@@ -61,3 +61,74 @@ export interface GrowerRegistration {
   previousSupplier?: string
   message?: string
 }
+
+// Careers
+export type EmploymentType = "Full-time" | "Contract" | "Seasonal"
+export type VacancyStatus = "open" | "closed"
+export type ApplicationStatus = "new" | "shortlisted" | "rejected"
+
+export interface Vacancy {
+  id: string
+  title: string
+  department: string
+  location: string
+  employment_type: EmploymentType
+  description: string
+  responsibilities: string | null
+  requirements: string | null
+  closing_date: string
+  reference_number: string | null
+  status: VacancyStatus
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Application {
+  id: string
+  vacancy_id: string
+  first_name: string
+  last_name: string
+  national_id: string
+  date_of_birth: string
+  gender: string
+  phone: string
+  email: string
+  physical_address: string
+  city: string
+  position_applied_for: string
+  reference_number: string | null
+  why_hire: string | null
+  expected_salary: string | null
+  willing_to_relocate: boolean
+  cv_path: string
+  academic_certificates_paths: string[] | null
+  cover_letter_path: string | null
+  declaration_accepted: boolean
+  status: ApplicationStatus
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ApplicationEducation {
+  id?: string
+  application_id?: string
+  education_level: string
+  qualification_type: string
+  qualification_name?: string | null
+  degree_class?: string | null
+  institution_name: string
+  field_of_study: string
+  year_completed: string
+  sort_order?: number
+}
+
+export interface ApplicationExperience {
+  id?: string
+  application_id?: string
+  employer: string
+  position_held: string
+  duration_from: string
+  duration_to: string
+  responsibilities: string
+  sort_order?: number
+}

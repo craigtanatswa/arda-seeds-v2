@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 import QuoteRequestForm from "@/components/quote-request-form"
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function QuotePage() {
           detailed quotation.
         </p>
 
-        <QuoteRequestForm />
+        <Suspense fallback={<div className="h-64 flex items-center justify-center text-gray-500">Loading form...</div>}>
+          <QuoteRequestForm />
+        </Suspense>
       </div>
     </div>
   )
