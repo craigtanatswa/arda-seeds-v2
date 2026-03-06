@@ -37,13 +37,18 @@ function AdminLoginContent() {
         .select("role")
         .eq("id", data.user.id)
         .single()
-      if (profile?.role !== "admin") {
+      const role = profile?.role as string | undefined
+      const allowedRoles = ["admin", "admin_hr", "admin_prcmt"]
+      if (!role || !allowedRoles.includes(role)) {
         await supabase.auth.signOut()
         throw new Error(
-          "Access denied. This account does not have admin rights. An administrator must set your profile role to 'admin' in the database (see docs/ADMIN_PASSWORD_RESET.md)."
+          "Access denied. Your account does not have admin access. An administrator must set your profile role (admin, admin_hr, or admin_prcmt) in the database."
         )
       }
-      router.replace("/admin")
+      if (role === "admin") router.replace("/admin")
+      else if (role === "admin_hr") router.replace("/admin/hr")
+      else if (role === "admin_prcmt") router.replace("/admin/procurement")
+      else router.replace("/admin")
       router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed.")
@@ -58,7 +63,6 @@ function AdminLoginContent() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-            <p className="text-gray-500 mt-1">ARDA Seeds Careers</p>
           </div>
           {resetSuccess && (
             <div className="mb-6 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">

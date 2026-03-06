@@ -3,42 +3,68 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabaseClient"
-import type { Vacancy } from "@/lib/types"
-import { Briefcase, Plus, Pencil, Trash2, XCircle, FileText, LogOut } from "lucide-react"
+import { Briefcase, FileText, LogOut, LayoutDashboard, Shield } from "lucide-react"
 
-export default function AdminDashboardPage() {
+interface AdminModule {
+  id: string
+  name: string
+  description: string
+  href: string
+  icon: React.ReactNode
+}
+
+const ADMIN_MODULES: AdminModule[] = [
+  {
+    id: "hr",
+    name: "HR System",
+    description: "Careers, vacancies, and job applications",
+    href: "/admin/hr",
+    icon: <Briefcase className="h-8 w-8" />,
+  },
+  {
+    id: "procurement",
+    name: "Procurement System",
+    description: "Tenders and supplier applications",
+    href: "/admin/procurement",
+    icon: <FileText className="h-8 w-8" />,
+  },
+]
+
+export default function MasterAdminDashboardPage() {
   const router = useRouter()
-  const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!supabase) return
-    supabase
-      .from("vacancies")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) console.error(error)
-        setVacancies((data as Vacancy[]) ?? [])
-        setLoading(false)
-      })
-  }, [])
-
-  const handleClose = async (id: string) => {
-    if (!supabase || !confirm("Close this vacancy? It will no longer appear on the careers page.")) return
-    const { error } = await supabase.from("vacancies").update({ status: "closed" }).eq("id", id)
-    if (error) alert(error.message)
-    else setVacancies((prev) => prev.map((v) => (v.id === id ? { ...v, status: "closed" } : v)))
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!supabase || !confirm("Delete this vacancy? This cannot be undone.")) return
-    const { error } = await supabase.from("vacancies").delete().eq("id", id)
-    if (error) alert(error.message)
-    else setVacancies((prev) => prev.filter((v) => v.id !== id))
-  }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace("/admin/login")
+        return
+      }
+      supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single()
+        .then(({ data: profile }) => {
+          const role = profile?.role as string | undefined
+          if (role === "admin_hr") {
+            router.replace("/admin/hr")
+            return
+          }
+          if (role === "admin_prcmt") {
+            router.replace("/admin/procurement")
+            return
+          }
+          if (role !== "admin") {
+            router.replace("/admin/login")
+            return
+          }
+          setLoading(false)
+        })
+    })
+  }, [router])
 
   const handleSignOut = async () => {
     await supabase?.auth.signOut()
@@ -46,106 +72,70 @@ export default function AdminDashboardPage() {
     router.refresh()
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-pulse text-gray-500">Loading...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="text-green-700 font-semibold hover:text-green-800">
-              ARDA Seeds
-            </Link>
-            <Link href="/admin" className="text-gray-900 font-medium">
-              Vacancies
-            </Link>
-            <Link href="/admin/applications" className="text-gray-600 hover:text-gray-900">
-              Applications
-            </Link>
+          <div className="flex items-center gap-2">
+            <LayoutDashboard className="h-6 w-6 text-green-700" />
+            <span className="font-semibold text-gray-900">Admin Dashboard</span>
           </div>
-          <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
-            <LogOut className="h-4 w-4" /> Sign out
-          </Button>
+          <div className="flex items-center gap-4">
+            <Link href="/admin/admins" className="text-gray-600 hover:text-gray-900 text-sm font-medium flex items-center gap-1">
+              <Shield className="h-4 w-4" /> Manage Admins
+            </Link>
+            <Link href="/" className="text-green-700 hover:text-green-800 text-sm font-medium">
+              View site
+            </Link>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="text-gray-600 hover:text-gray-900 text-sm font-medium flex items-center gap-1"
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
-          <Button asChild className="bg-green-700 hover:bg-green-800">
-            <Link href="/admin/vacancies/new">
-              <Plus className="h-4 w-4 mr-2" /> New vacancy
-            </Link>
-          </Button>
+      <main className="container mx-auto px-4 py-12">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Systems</h1>
+        <p className="text-gray-600 mb-8">Choose a system to manage.</p>
+
+        <div className="mb-8">
+          <Link
+            href="/admin/admins"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 shadow-sm hover:border-green-200 hover:bg-green-50 hover:text-green-800 transition-colors"
+          >
+            <Shield className="h-5 w-5 text-green-700" />
+            <span className="font-medium">Manage Admins</span>
+            <span className="text-sm text-gray-500">— Add or remove HR / Procurement admins</span>
+          </Link>
         </div>
 
-        {loading ? (
-          <p className="text-gray-500">Loading...</p>
-        ) : vacancies.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-            <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">No vacancies yet.</p>
-            <Button asChild className="mt-4 bg-green-700 hover:bg-green-800">
-              <Link href="/admin/vacancies/new">Create first vacancy</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Title</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Department</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Closing</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vacancies.map((v) => (
-                  <tr key={v.id} className="border-b border-gray-100 last:border-0">
-                    <td className="py-3 px-4">
-                      <Link href={`/careers/${v.id}`} target="_blank" className="text-green-700 hover:underline">
-                        {v.title}
-                      </Link>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">{v.department}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                          v.status === "open" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {v.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">{new Date(v.closing_date).toLocaleDateString()}</td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/admin/applications?vacancy=${v.id}`}>
-                            <FileText className="h-4 w-4 mr-1" /> Applications
-                          </Link>
-                        </Button>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/admin/vacancies/${v.id}/edit`}>
-                            <Pencil className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        {v.status === "open" && (
-                          <Button variant="ghost" size="sm" onClick={() => handleClose(v.id)} className="text-amber-600">
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(v.id)} className="text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {ADMIN_MODULES.map((module) => (
+            <Link
+              key={module.id}
+              href={module.href}
+              className="block bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:border-green-200 transition-all group"
+            >
+              <div className="w-14 h-14 rounded-xl bg-green-50 text-green-700 flex items-center justify-center mb-4 group-hover:bg-green-100">
+                {module.icon}
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">{module.name}</h2>
+              <p className="text-sm text-gray-600">{module.description}</p>
+            </Link>
+          ))}
+        </div>
       </main>
     </div>
   )

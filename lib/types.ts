@@ -132,3 +132,36 @@ export interface ApplicationExperience {
   responsibilities: string
   sort_order?: number
 }
+
+// Tenders (Procurement)
+export type TenderStatus = "draft" | "open" | "closed" | "shortlisted" | "awarded"
+export type TenderApplicationStatus = "submitted" | "shortlisted" | "rejected" | "selected"
+
+export interface Tender {
+  id: string
+  title: string
+  reference_number: string
+  summary: string
+  description: string
+  document_url: string | null
+  closing_date: string
+  status: TenderStatus
+  created_by: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export interface TenderApplication {
+  id: string
+  tender_id: string
+  company_name: string
+  contact_person: string
+  email: string
+  phone: string
+  proposal_document_url: string | null
+  tax_clearance_document_url: string | null
+  status: TenderApplicationStatus
+  submitted_at?: string
+  created_at?: string
+  updated_at?: string
+}

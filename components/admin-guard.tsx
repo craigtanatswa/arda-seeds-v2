@@ -3,7 +3,27 @@
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
+import { ADMIN_SYSTEMS, SUPER_ADMIN_ROLE } from "@/lib/admin-systems"
 import { Loader2 } from "lucide-react"
+
+const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"]
+
+function canAccess(pathname: string, role: string | null): boolean {
+  if (!role) return false
+  if (PUBLIC_ADMIN_PATHS.some((p) => pathname === p)) return true
+  if (pathname === "/admin" || pathname === "/admin/") return role === SUPER_ADMIN_ROLE
+  if (pathname.startsWith("/admin/admins")) return role === SUPER_ADMIN_ROLE
+  for (const sys of ADMIN_SYSTEMS) {
+    if (pathname.startsWith(sys.path)) return role === SUPER_ADMIN_ROLE || role === sys.role
+  }
+  return false
+}
+
+function getRedirectForRole(role: string): string {
+  if (role === SUPER_ADMIN_ROLE) return "/admin"
+  const sys = ADMIN_SYSTEMS.find((s) => s.role === role)
+  return sys?.path ?? "/admin/login"
+}
 
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -15,8 +35,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
       setStatus("allowed")
       return
     }
-    const publicAdminPaths = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"]
-    if (publicAdminPaths.some((p) => pathname === p)) {
+    if (PUBLIC_ADMIN_PATHS.some((p) => pathname === p)) {
       setStatus("allowed")
       return
     }
@@ -26,7 +45,9 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
         setStatus("denied")
         return
       }
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (!session) {
         router.replace("/admin/login")
         setStatus("denied")
@@ -37,8 +58,16 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
         .select("role")
         .eq("id", session.user.id)
         .single()
-      if (profile?.role !== "admin") {
+
+      const role = (profile?.role as string) ?? null
+      const validRoles = [SUPER_ADMIN_ROLE, ...ADMIN_SYSTEMS.map((s) => s.role)]
+      if (!role || !validRoles.includes(role)) {
         router.replace("/admin/login")
+        setStatus("denied")
+        return
+      }
+      if (!canAccess(pathname, role)) {
+        router.replace(getRedirectForRole(role))
         setStatus("denied")
         return
       }
