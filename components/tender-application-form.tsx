@@ -22,10 +22,20 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
   const [phone, setPhone] = useState("")
   const [proposalFile, setProposalFile] = useState<File | null>(null)
   const [taxClearanceFile, setTaxClearanceFile] = useState<File | null>(null)
+  const [certificateOfIncorporationFile, setCertificateOfIncorporationFile] = useState<File | null>(null)
+  const [cr6File, setCr6File] = useState<File | null>(null)
+  const [cr5File, setCr5File] = useState<File | null>(null)
+  const [prazCertificateFile, setPrazCertificateFile] = useState<File | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!supabase) return
+
+    if (!proposalFile || !taxClearanceFile || !certificateOfIncorporationFile || !cr6File || !cr5File) {
+      alert("Please upload all required documents.")
+      return
+    }
+
     setLoading(true)
     let proposalUrl: string | null = null
     if (proposalFile && proposalFile.type === "application/pdf") {
@@ -49,6 +59,55 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       }
       taxClearanceUrl = path
     }
+
+    let certificateOfIncorporationUrl: string | null = null
+    if (certificateOfIncorporationFile && certificateOfIncorporationFile.type === "application/pdf") {
+      const path = `proposals/${tenderId}/coi-${Date.now()}-${certificateOfIncorporationFile.name}`
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, certificateOfIncorporationFile, { upsert: true })
+      if (upErr) {
+        alert(upErr.message)
+        setLoading(false)
+        return
+      }
+      certificateOfIncorporationUrl = path
+    }
+
+    let cr6Url: string | null = null
+    if (cr6File && cr6File.type === "application/pdf") {
+      const path = `proposals/${tenderId}/cr6-${Date.now()}-${cr6File.name}`
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, cr6File, { upsert: true })
+      if (upErr) {
+        alert(upErr.message)
+        setLoading(false)
+        return
+      }
+      cr6Url = path
+    }
+
+    let cr5Url: string | null = null
+    if (cr5File && cr5File.type === "application/pdf") {
+      const path = `proposals/${tenderId}/cr5-${Date.now()}-${cr5File.name}`
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, cr5File, { upsert: true })
+      if (upErr) {
+        alert(upErr.message)
+        setLoading(false)
+        return
+      }
+      cr5Url = path
+    }
+
+    let prazCertificateUrl: string | null = null
+    if (prazCertificateFile && prazCertificateFile.type === "application/pdf") {
+      const path = `proposals/${tenderId}/praz-${Date.now()}-${prazCertificateFile.name}`
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, prazCertificateFile, { upsert: true })
+      if (upErr) {
+        alert(upErr.message)
+        setLoading(false)
+        return
+      }
+      prazCertificateUrl = path
+    }
+
     const { error } = await supabase.from("tender_applications").insert({
       tender_id: tenderId,
       company_name: companyName.trim(),
@@ -57,6 +116,10 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       phone: phone.trim(),
       proposal_document_url: proposalUrl,
       tax_clearance_document_url: taxClearanceUrl,
+      certificate_of_incorporation_document_url: certificateOfIncorporationUrl,
+      cr6_document_url: cr6Url,
+      cr5_document_url: cr5Url,
+      praz_certificate_document_url: prazCertificateUrl,
       status: "submitted",
     })
     setLoading(false)
@@ -87,7 +150,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
         <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} required />
       </div>
       <div>
-        <Label>Proposal Document (PDF) *</Label>
+        <Label>Proposal Bid Document (PDF) *</Label>
         <Input
           type="file"
           accept=".pdf,application/pdf"
@@ -96,6 +159,39 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
           required
         />
         {proposalFile && <p className="text-sm text-gray-500 mt-1">{proposalFile.name}</p>}
+      </div>
+      <div>
+        <Label>Certificate of Incorporation (PDF) *</Label>
+        <Input
+          type="file"
+          accept=".pdf,application/pdf"
+          onChange={(e) => setCertificateOfIncorporationFile(e.target.files?.[0] ?? null)}
+          className="mt-1"
+          required
+        />
+        {certificateOfIncorporationFile && <p className="text-sm text-gray-500 mt-1">{certificateOfIncorporationFile.name}</p>}
+      </div>
+      <div>
+        <Label>CR6 (PDF) *</Label>
+        <Input
+          type="file"
+          accept=".pdf,application/pdf"
+          onChange={(e) => setCr6File(e.target.files?.[0] ?? null)}
+          className="mt-1"
+          required
+        />
+        {cr6File && <p className="text-sm text-gray-500 mt-1">{cr6File.name}</p>}
+      </div>
+      <div>
+        <Label>CR5 (PDF) *</Label>
+        <Input
+          type="file"
+          accept=".pdf,application/pdf"
+          onChange={(e) => setCr5File(e.target.files?.[0] ?? null)}
+          className="mt-1"
+          required
+        />
+        {cr5File && <p className="text-sm text-gray-500 mt-1">{cr5File.name}</p>}
       </div>
       <div>
         <Label>Tax Clearance Document (PDF) *</Label>
@@ -107,6 +203,16 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
           required
         />
         {taxClearanceFile && <p className="text-sm text-gray-500 mt-1">{taxClearanceFile.name}</p>}
+      </div>
+      <div>
+        <Label>PRAZ Certificate (PDF) (optional)</Label>
+        <Input
+          type="file"
+          accept=".pdf,application/pdf"
+          onChange={(e) => setPrazCertificateFile(e.target.files?.[0] ?? null)}
+          className="mt-1"
+        />
+        {prazCertificateFile && <p className="text-sm text-gray-500 mt-1">{prazCertificateFile.name}</p>}
       </div>
       <div className="flex gap-3 pt-4">
         <Button type="submit" disabled={loading} className="bg-green-700 hover:bg-green-800">

@@ -160,6 +160,10 @@ export interface TenderApplication {
   phone: string
   proposal_document_url: string | null
   tax_clearance_document_url: string | null
+  certificate_of_incorporation_document_url: string | null
+  cr6_document_url: string | null
+  cr5_document_url: string | null
+  praz_certificate_document_url: string | null
   status: TenderApplicationStatus
   submitted_at?: string
   created_at?: string

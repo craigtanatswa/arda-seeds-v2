@@ -135,7 +135,7 @@ export default function TenderApplicationsPage() {
                         }}
                         className="gap-1"
                       >
-                        <Download className="h-4 w-4" /> Proposal
+                        <Download className="h-4 w-4" /> Proposal Bid
                       </Button>
                     )}
                     {app.tax_clearance_document_url && (
@@ -149,6 +149,58 @@ export default function TenderApplicationsPage() {
                         className="gap-1"
                       >
                         <Download className="h-4 w-4" /> Tax Clearance
+                      </Button>
+                    )}
+                    {app.certificate_of_incorporation_document_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const url = await getSignedUrl(app.certificate_of_incorporation_document_url!)
+                          if (url) window.open(url, "_blank")
+                        }}
+                        className="gap-1"
+                      >
+                        <Download className="h-4 w-4" /> Certificate of Incorporation
+                      </Button>
+                    )}
+                    {app.cr6_document_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const url = await getSignedUrl(app.cr6_document_url!)
+                          if (url) window.open(url, "_blank")
+                        }}
+                        className="gap-1"
+                      >
+                        <Download className="h-4 w-4" /> CR6
+                      </Button>
+                    )}
+                    {app.cr5_document_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const url = await getSignedUrl(app.cr5_document_url!)
+                          if (url) window.open(url, "_blank")
+                        }}
+                        className="gap-1"
+                      >
+                        <Download className="h-4 w-4" /> CR5
+                      </Button>
+                    )}
+                    {app.praz_certificate_document_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const url = await getSignedUrl(app.praz_certificate_document_url!)
+                          if (url) window.open(url, "_blank")
+                        }}
+                        className="gap-1"
+                      >
+                        <Download className="h-4 w-4" /> PRAZ Certificate
                       </Button>
                     )}
                   </div>
