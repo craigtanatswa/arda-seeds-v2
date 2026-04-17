@@ -89,7 +89,7 @@ Ensure you have the following installed:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/arda-seeds-website.git
+git clone https://github.com/craigtanatswa/arda-seeds-website.git
 
 # Navigate to the project directory
 cd arda-seeds-website
