@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
@@ -22,12 +23,14 @@ import {
 } from "@/components/ui/select"
 import { supabase } from "@/lib/supabaseClient"
 import { ADMIN_SYSTEMS, getSystemByRole } from "@/lib/admin-systems"
+import { useNotification } from "@/components/notification-provider"
 import { Plus, LogOut, LayoutDashboard, Shield, Trash2 } from "lucide-react"
 
 type AdminRow = { id: string; email: string | null; role: string }
 
 export default function ManageAdminsPage() {
   const router = useRouter()
+  const { alert } = useNotification()
   const [admins, setAdmins] = useState<AdminRow[]>([])
   const [loading, setLoading] = useState(true)
   const [accessToken, setAccessToken] = useState<string | null>(null)
@@ -91,7 +94,7 @@ export default function ManageAdminsPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        alert(data.error ?? "Failed to add admin")
+        await alert(data.error ?? "Failed to add admin", "Error")
         return
       }
       setAdmins((prev) => [...prev.filter((a) => a.id !== data.id), { id: data.id, email: data.email ?? addEmail, role: data.role }])
@@ -115,7 +118,7 @@ export default function ManageAdminsPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        alert(data.error ?? "Failed to update")
+        await alert(data.error ?? "Failed to update", "Error")
         return
       }
       setAdmins((prev) => prev.map((a) => (a.id === editId ? { ...a, role: data.role } : a)))
@@ -242,8 +245,7 @@ export default function ManageAdminsPage() {
             </div>
             <div>
               <Label>Password (optional; min 6 characters)</Label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={addPassword}
                 onChange={(e) => setAddPassword(e.target.value)}
                 placeholder="Leave blank to send invite"

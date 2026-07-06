@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { supabase } from "@/lib/supabaseClient"
+import { useNotification } from "@/components/notification-provider"
 import type { Vacancy, EmploymentType } from "@/lib/types"
 
 const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
@@ -21,6 +22,7 @@ const EMPLOYMENT_TYPES: { value: EmploymentType; label: string }[] = [
 
 export default function EditVacancyPage() {
   const router = useRouter()
+  const { alert } = useNotification()
   const params = useParams()
   const id = params?.id as string
   const [loading, setLoading] = useState(false)
@@ -85,7 +87,7 @@ export default function EditVacancyPage() {
       .eq("id", id)
     setLoading(false)
     if (error) {
-      alert(error.message)
+      await alert(error.message, "Error")
       return
     }
     router.push("/admin/hr")

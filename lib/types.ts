@@ -45,7 +45,9 @@ export interface QuoteRequest {
   address: string
   products: {
     productId: string
-    quantity: number
+    packSize: string
+    packCount: number
+    totalQuantityKg: number
   }[]
   message?: string
 }

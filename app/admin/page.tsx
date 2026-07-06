@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
@@ -33,51 +32,11 @@ const ADMIN_MODULES: AdminModule[] = [
 
 export default function MasterAdminDashboardPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!supabase) return
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.replace("/admin/login")
-        return
-      }
-      supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single()
-        .then(({ data: profile }) => {
-          const role = profile?.role as string | undefined
-          if (role === "admin_hr") {
-            router.replace("/admin/hr")
-            return
-          }
-          if (role === "admin_prcmt") {
-            router.replace("/admin/procurement")
-            return
-          }
-          if (role !== "admin") {
-            router.replace("/admin/login")
-            return
-          }
-          setLoading(false)
-        })
-    })
-  }, [router])
 
   const handleSignOut = async () => {
     await supabase?.auth.signOut()
     router.replace("/admin/login")
     router.refresh()
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse text-gray-500">Loading...</div>
-      </div>
-    )
   }
 
   return (

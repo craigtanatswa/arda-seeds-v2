@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabaseClient"
+import { useNotification } from "@/components/notification-provider"
 
 const BUCKET = "tender-documents"
 const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
@@ -15,6 +16,7 @@ type Props = { tenderId: string; tenderTitle: string }
 
 export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) {
   const router = useRouter()
+  const { alert } = useNotification()
   const [loading, setLoading] = useState(false)
   const [companyName, setCompanyName] = useState("")
   const [contactPerson, setContactPerson] = useState("")
@@ -32,7 +34,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
     if (!supabase) return
 
     if (!proposalFile || !taxClearanceFile || !certificateOfIncorporationFile || !cr6File || !cr5File) {
-      alert("Please upload all required documents.")
+      await alert("Please upload all required documents.", "Missing documents")
       return
     }
 
@@ -42,7 +44,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       const path = `proposals/${tenderId}/${Date.now()}-${proposalFile.name}`
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, proposalFile, { upsert: true })
       if (upErr) {
-        alert(upErr.message)
+        await alert(upErr.message, "Error")
         setLoading(false)
         return
       }
@@ -53,7 +55,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       const path = `proposals/${tenderId}/tax-${Date.now()}-${taxClearanceFile.name}`
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, taxClearanceFile, { upsert: true })
       if (upErr) {
-        alert(upErr.message)
+        await alert(upErr.message, "Error")
         setLoading(false)
         return
       }
@@ -65,7 +67,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       const path = `proposals/${tenderId}/coi-${Date.now()}-${certificateOfIncorporationFile.name}`
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, certificateOfIncorporationFile, { upsert: true })
       if (upErr) {
-        alert(upErr.message)
+        await alert(upErr.message, "Error")
         setLoading(false)
         return
       }
@@ -77,7 +79,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       const path = `proposals/${tenderId}/cr6-${Date.now()}-${cr6File.name}`
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, cr6File, { upsert: true })
       if (upErr) {
-        alert(upErr.message)
+        await alert(upErr.message, "Error")
         setLoading(false)
         return
       }
@@ -89,7 +91,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       const path = `proposals/${tenderId}/cr5-${Date.now()}-${cr5File.name}`
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, cr5File, { upsert: true })
       if (upErr) {
-        alert(upErr.message)
+        await alert(upErr.message, "Error")
         setLoading(false)
         return
       }
@@ -101,7 +103,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
       const path = `proposals/${tenderId}/praz-${Date.now()}-${prazCertificateFile.name}`
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, prazCertificateFile, { upsert: true })
       if (upErr) {
-        alert(upErr.message)
+        await alert(upErr.message, "Error")
         setLoading(false)
         return
       }
@@ -124,7 +126,7 @@ export default function TenderApplicationForm({ tenderId, tenderTitle }: Props) 
     })
     setLoading(false)
     if (error) {
-      alert(error.message)
+      await alert(error.message, "Error")
       return
     }
     router.push(`/tenders/${tenderId}?applied=1`)

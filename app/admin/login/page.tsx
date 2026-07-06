@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabaseClient"
 
@@ -83,8 +84,7 @@ function AdminLoginContent() {
             </div>
             <div>
               <Label className="text-gray-700">Password</Label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputClass}

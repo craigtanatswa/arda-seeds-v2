@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input"
 import { supabase } from "@/lib/supabaseClient"
 import type { Tender } from "@/lib/types"
 import { TenderStatusBadge } from "@/components/admin/status-badge"
+import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
 import { FileText, Plus, Pencil, Trash2, Eye, LogOut, FolderOpen, FolderClosed, Award, Users } from "lucide-react"
 import { useAdminRole } from "@/lib/hooks/use-admin-role"
+import { useNotification } from "@/components/notification-provider"
 
 type ProcurementStats = {
   totalTenders: number
@@ -23,26 +25,30 @@ type ProcurementStats = {
 export default function ProcurementDashboardPage() {
   const router = useRouter()
   const userRole = useAdminRole()
+  const { alert, confirm } = useNotification()
   const [tenders, setTenders] = useState<Tender[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [closingDateFilter, setClosingDateFilter] = useState("")
+  const [closingDateFrom, setClosingDateFrom] = useState("")
+  const [closingDateTo, setClosingDateTo] = useState("")
   const [applicationsCount, setApplicationsCount] = useState<Record<string, number>>({})
   const [stats, setStats] = useState<ProcurementStats | null>(null)
 
   useEffect(() => {
     if (!supabase) return
+    setLoading(true)
     let q = supabase.from("tenders").select("*").order("created_at", { ascending: false })
     if (statusFilter !== "all") q = q.eq("status", statusFilter)
     if (searchQuery.trim()) q = q.ilike("title", `%${searchQuery.trim()}%`)
-    if (closingDateFilter) q = q.gte("closing_date", closingDateFilter)
+    if (closingDateFrom) q = q.gte("closing_date", closingDateFrom)
+    if (closingDateTo) q = q.lte("closing_date", closingDateTo)
     q.then(({ data, error }) => {
       if (error) console.error(error)
       setTenders((data as Tender[]) ?? [])
       setLoading(false)
     })
-  }, [statusFilter, searchQuery, closingDateFilter])
+  }, [statusFilter, searchQuery, closingDateFrom, closingDateTo])
 
   useEffect(() => {
     if (!supabase || tenders.length === 0) return
@@ -80,9 +86,15 @@ export default function ProcurementDashboardPage() {
   }, [])
 
   const handleDelete = async (id: string) => {
-    if (!supabase || !confirm("Delete this tender? This cannot be undone.")) return
+    if (!supabase) return
+    const confirmed = await confirm("This cannot be undone.", {
+      title: "Delete this tender?",
+      confirmLabel: "Delete",
+      destructive: true,
+    })
+    if (!confirmed) return
     const { error } = await supabase.from("tenders").delete().eq("id", id)
-    if (error) alert(error.message)
+    if (error) await alert(error.message, "Error")
     else setTenders((prev) => prev.filter((t) => t.id !== id))
   }
 
@@ -90,6 +102,19 @@ export default function ProcurementDashboardPage() {
     await supabase?.auth.signOut()
     router.replace("/admin/login")
     router.refresh()
+  }
+
+  const hasActiveFilters =
+    statusFilter !== "all" ||
+    searchQuery.trim() !== "" ||
+    closingDateFrom !== "" ||
+    closingDateTo !== ""
+
+  const clearFilters = () => {
+    setStatusFilter("all")
+    setSearchQuery("")
+    setClosingDateFrom("")
+    setClosingDateTo("")
   }
 
   return (
@@ -164,7 +189,7 @@ export default function ProcurementDashboardPage() {
           </Button>
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex flex-wrap items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">Status:</span>
             <select
@@ -188,15 +213,35 @@ export default function ProcurementDashboardPage() {
               className="max-w-xs"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Closing from:</span>
-            <Input
-              type="date"
-              value={closingDateFilter}
-              onChange={(e) => setClosingDateFilter(e.target.value)}
-              className="max-w-[160px]"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Closing Date:</span>
+            <div className="flex items-center gap-2">
+              <label htmlFor="closing-date-from" className="text-sm text-gray-500">
+                From
+              </label>
+              <Input
+                id="closing-date-from"
+                type="date"
+                value={closingDateFrom}
+                onChange={(e) => setClosingDateFrom(e.target.value)}
+                className="max-w-[160px]"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="closing-date-to" className="text-sm text-gray-500">
+                To
+              </label>
+              <Input
+                id="closing-date-to"
+                type="date"
+                value={closingDateTo}
+                min={closingDateFrom || undefined}
+                onChange={(e) => setClosingDateTo(e.target.value)}
+                className="max-w-[160px]"
+              />
+            </div>
           </div>
+          <ClearFiltersButton visible={hasActiveFilters} onClick={clearFilters} />
         </div>
 
         {loading ? (
@@ -238,7 +283,7 @@ export default function ProcurementDashboardPage() {
                       <div className="flex items-center justify-end gap-2">
                         <Button asChild variant="ghost" size="sm">
                           <Link href={`/admin/procurement/tenders/${t.id}/applications`}>
-                            <Eye className="h-4 w-4 mr-1" /> View
+                            <Eye className="h-4 w-4 mr-1" /> View Applications
                           </Link>
                         </Button>
                         <Button asChild variant="ghost" size="sm">

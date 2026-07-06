@@ -6,62 +6,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
+import AchievementStats from "@/components/achievement-stats"
 
 export default function AboutPage() {
   const [activeTab, setActiveTab] = useState("company")
   const [isVisible, setIsVisible] = useState(false)
-  const statsRef = useRef<HTMLDivElement>(null)
-  const [counters, setCounters] = useState({ varieties: 0, farmers: 0, years: 0, partnerships: 0 })
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            animateCounters()
-          }
-        })
-      },
-      { threshold: 0.3 }
-    )
-
-    if (statsRef.current) {
-      observer.observe(statsRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
-
-  const animateCounters = () => {
-    const duration = 2000
-    const targets = { varieties: 16, farmers: 1000, years: 20, partnerships: 5 }
-    const steps = 60
-    const stepDuration = duration / steps
-
-    let step = 0
-    const interval = setInterval(() => {
-      step++
-      const progress = step / steps
-      const easeOut = 1 - Math.pow(1 - progress, 3)
-
-      setCounters({
-        varieties: Math.floor(targets.varieties * easeOut),
-        farmers: Math.floor(targets.farmers * easeOut),
-        years: Math.floor(targets.years * easeOut),
-        partnerships: Math.floor(targets.partnerships * easeOut),
-      })
-
-      if (step >= steps) {
-        clearInterval(interval)
-        setCounters(targets)
-      }
-    }, stepDuration)
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
@@ -389,29 +343,7 @@ export default function AboutPage() {
             </div>
 
             {/* Achievements */}
-            <div ref={statsRef}>
-              <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center decorative-line">
-                Our Achievements
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-                <div className="stat-card bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl shadow-lg border border-green-100">
-                  <div className="text-5xl md:text-6xl font-bold text-green-700 mb-3">{counters.varieties}+</div>
-                  <p className="text-gray-700 text-lg font-medium">Seed Varieties</p>
-                </div>
-                <div className="stat-card bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl shadow-lg border border-green-100">
-                  <div className="text-5xl md:text-6xl font-bold text-green-700 mb-3">{counters.farmers}+</div>
-                  <p className="text-gray-700 text-lg font-medium">Farmers Served</p>
-                </div>
-                <div className="stat-card bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl shadow-lg border border-green-100">
-                  <div className="text-5xl md:text-6xl font-bold text-green-700 mb-3">{counters.years}+</div>
-                  <p className="text-gray-700 text-lg font-medium">Years of Experience</p>
-                </div>
-                <div className="stat-card bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl shadow-lg border border-green-100">
-                  <div className="text-5xl md:text-6xl font-bold text-green-700 mb-3">{counters.partnerships}+</div>
-                  <p className="text-gray-700 text-lg font-medium">Research Partnerships</p>
-                </div>
-              </div>
-            </div>
+            <AchievementStats />
           </TabsContent>
 
           {/* Team Tab */}

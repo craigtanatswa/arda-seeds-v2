@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { supabase } from "@/lib/supabaseClient"
+import { useNotification } from "@/components/notification-provider"
 import type { TenderStatus } from "@/lib/types"
 
 const BUCKET = "tender-documents"
@@ -22,6 +23,7 @@ const STATUS_OPTIONS: { value: TenderStatus; label: string }[] = [
 
 export default function NewTenderPage() {
   const router = useRouter()
+  const { alert } = useNotification()
   const [loading, setLoading] = useState(false)
   const [title, setTitle] = useState("")
   const [referenceNumber, setReferenceNumber] = useState("")
@@ -40,7 +42,7 @@ export default function NewTenderPage() {
       const path = `tenders/${Date.now()}-${documentFile.name}`
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, documentFile, { upsert: true })
       if (upErr) {
-        alert(upErr.message)
+        await alert(upErr.message, "Error")
         setLoading(false)
         return
       }
@@ -59,7 +61,7 @@ export default function NewTenderPage() {
     })
     setLoading(false)
     if (error) {
-      alert(error.message)
+      await alert(error.message, "Error")
       return
     }
     router.push("/admin/procurement")

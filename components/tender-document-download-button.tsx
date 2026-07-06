@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { useNotification } from "@/components/notification-provider"
 import { Download } from "lucide-react"
 
 type Props = {
@@ -18,6 +19,7 @@ export default function TenderDocumentDownloadButton({
   className,
 }: Props) {
   const [loading, setLoading] = useState(false)
+  const { alert } = useNotification()
 
   const handleDownload = async () => {
     setLoading(true)
@@ -25,7 +27,7 @@ export default function TenderDocumentDownloadButton({
       const res = await fetch(`/api/tenders/${tenderId}/document`)
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        alert(err?.error ?? "Download failed")
+        await alert(err?.error ?? "Download failed", "Error")
         return
       }
       const blob = await res.blob()
@@ -38,7 +40,7 @@ export default function TenderDocumentDownloadButton({
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch {
-      alert("Download failed")
+      await alert("Download failed", "Error")
     } finally {
       setLoading(false)
     }

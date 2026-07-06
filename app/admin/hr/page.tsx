@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabaseClient"
 import type { Vacancy } from "@/lib/types"
 import { Briefcase, Plus, Pencil, Trash2, XCircle, FileText, LogOut, Users, FolderOpen, FolderClosed } from "lucide-react"
 import { useAdminRole } from "@/lib/hooks/use-admin-role"
+import { useNotification } from "@/components/notification-provider"
 
 type HRStats = {
   totalVacancies: number
@@ -22,6 +23,7 @@ type HRStats = {
 export default function HRDashboardPage() {
   const router = useRouter()
   const userRole = useAdminRole()
+  const { alert, confirm } = useNotification()
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<HRStats | null>(null)
@@ -69,16 +71,27 @@ export default function HRDashboardPage() {
   }, [])
 
   const handleClose = async (id: string) => {
-    if (!supabase || !confirm("Close this vacancy? It will no longer appear on the careers page.")) return
+    if (!supabase) return
+    const confirmed = await confirm(
+      "It will no longer appear on the careers page.",
+      { title: "Close this vacancy?", confirmLabel: "Close vacancy" }
+    )
+    if (!confirmed) return
     const { error } = await supabase.from("vacancies").update({ status: "closed" }).eq("id", id)
-    if (error) alert(error.message)
+    if (error) await alert(error.message, "Error")
     else setVacancies((prev) => prev.map((v) => (v.id === id ? { ...v, status: "closed" } : v)))
   }
 
   const handleDelete = async (id: string) => {
-    if (!supabase || !confirm("Delete this vacancy? This cannot be undone.")) return
+    if (!supabase) return
+    const confirmed = await confirm("This cannot be undone.", {
+      title: "Delete this vacancy?",
+      confirmLabel: "Delete",
+      destructive: true,
+    })
+    if (!confirmed) return
     const { error } = await supabase.from("vacancies").delete().eq("id", id)
-    if (error) alert(error.message)
+    if (error) await alert(error.message, "Error")
     else setVacancies((prev) => prev.filter((v) => v.id !== id))
   }
 
@@ -211,16 +224,16 @@ export default function HRDashboardPage() {
                             <FileText className="h-4 w-4 mr-1" /> Applications
                           </Link>
                         </Button>
+                        {v.status === "open" && (
+                          <Button variant="ghost" size="sm" onClick={() => handleClose(v.id)} className="text-amber-600">
+                            <XCircle className="h-4 w-4 mr-1" /> Close vacancy
+                          </Button>
+                        )}
                         <Button asChild variant="ghost" size="sm">
                           <Link href={`/admin/hr/vacancies/${v.id}/edit`}>
                             <Pencil className="h-4 w-4" />
                           </Link>
                         </Button>
-                        {v.status === "open" && (
-                          <Button variant="ghost" size="sm" onClick={() => handleClose(v.id)} className="text-amber-600">
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        )}
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(v.id)} className="text-red-600">
                           <Trash2 className="h-4 w-4" />
                         </Button>

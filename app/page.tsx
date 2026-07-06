@@ -6,6 +6,7 @@ import TestimonialCard from "@/components/testimonial-card";
 import { ArrowRight, Leaf, Sprout, FlaskRoundIcon as Flask, Package, Check, TrendingUp, Shield } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import HeroSlideshow from "@/components/hero-slideshow";
+import ScrollFlyIn from "@/components/scroll-fly-in";
 import "./home-styles.css";
 
 export default async function Home() {
@@ -64,35 +65,41 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white p-8 rounded-2xl shadow-lg card-hover-lift border border-gray-100">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                <Shield className="h-8 w-8 text-white" />
+            <ScrollFlyIn delay={0} className="h-full">
+              <div className="bg-white p-8 rounded-2xl shadow-lg card-hover-lift border border-gray-100 h-full">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                  <Shield className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Quality Assured</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Every seed batch undergoes rigorous testing for purity, germination, and disease resistance to ensure you get the best.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Quality Assured</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Every seed batch undergoes rigorous testing for purity, germination, and disease resistance to ensure you get the best.
-              </p>
-            </div>
+            </ScrollFlyIn>
 
-            <div className="bg-white p-8 rounded-2xl shadow-lg card-hover-lift border border-gray-100">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                <TrendingUp className="h-8 w-8 text-white" />
+            <ScrollFlyIn delay={0.1} className="h-full">
+              <div className="bg-white p-8 rounded-2xl shadow-lg card-hover-lift border border-gray-100 h-full">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                  <TrendingUp className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Proven Results</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Our varieties are specifically bred for local conditions, delivering superior yields and consistent performance.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Proven Results</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Our varieties are specifically bred for local conditions, delivering superior yields and consistent performance.
-              </p>
-            </div>
+            </ScrollFlyIn>
 
-            <div className="bg-white p-8 rounded-2xl shadow-lg card-hover-lift border border-gray-100">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                <Leaf className="h-8 w-8 text-white" />
+            <ScrollFlyIn delay={0.2} className="h-full">
+              <div className="bg-white p-8 rounded-2xl shadow-lg card-hover-lift border border-gray-100 h-full">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                  <Leaf className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Expert Support</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Access our team of agronomists for technical advice, planting guides, and ongoing crop management support.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Expert Support</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Access our team of agronomists for technical advice, planting guides, and ongoing crop management support.
-              </p>
-            </div>
+            </ScrollFlyIn>
           </div>
         </div>
       </section>
@@ -110,54 +117,66 @@ export default async function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent">
-              <ProductCategoryCard
-                title="Maize"
-                description="High-yielding maize varieties with excellent disease resistance"
-                image="/images/maize.jpg"
-                href="/products/maize"
-              />
-            </div>
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent">
-              <ProductCategoryCard
-                title="Wheat"
-                description="Quality wheat seeds adapted to various ecological zones"
-                image="/images/wheat.jpg"
-                href="/products/wheat"
-              />
-            </div>
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent">
-              <ProductCategoryCard
-                title="Soybeans"
-                description="Soybean varieties with high protein content and disease resistance"
-                image="/images/soybeans.jpg"
-                href="/products/soybeans"
-              />
-            </div>
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent">
-              <ProductCategoryCard
-                title="Groundnuts"
-                description="Drought-tolerant groundnut varieties with high pod yield"
-                image="/images/groundnuts.jpg"
-                href="/products/groundnuts"
-              />
-            </div>
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent">
-              <ProductCategoryCard
-                title="Sunflower"
-                description="Sunflower seeds with high oil content for various conditions"
-                image="/images/sunflower.jpg"
-                href="/products/sunflower"
-              />
-            </div>
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent">
-              <ProductCategoryCard
-                title="Other Crops"
-                description="Explore our cowpeas, sugarbeans, sorghum and other varieties"
-                image="/images/other-crops.jpg"
-                href="/products/other"
-              />
-            </div>
+            <ScrollFlyIn delay={0} className="h-full">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <ProductCategoryCard
+                  title="Maize"
+                  description="High-yielding maize varieties with excellent disease resistance"
+                  image="/images/maize.jpg"
+                  href="/products/maize"
+                />
+              </div>
+            </ScrollFlyIn>
+            <ScrollFlyIn delay={0.1} className="h-full">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <ProductCategoryCard
+                  title="Wheat"
+                  description="Quality wheat seeds adapted to various ecological zones"
+                  image="/images/wheat.jpg"
+                  href="/products/wheat"
+                />
+              </div>
+            </ScrollFlyIn>
+            <ScrollFlyIn delay={0.2} className="h-full">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <ProductCategoryCard
+                  title="Soybeans"
+                  description="Soybean varieties with high protein content and disease resistance"
+                  image="/images/soybeans.jpg"
+                  href="/products/soybeans"
+                />
+              </div>
+            </ScrollFlyIn>
+            <ScrollFlyIn delay={0.3} className="h-full">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <ProductCategoryCard
+                  title="Groundnuts"
+                  description="Drought-tolerant groundnut varieties with high pod yield"
+                  image="/images/groundnuts.jpg"
+                  href="/products/groundnuts"
+                />
+              </div>
+            </ScrollFlyIn>
+            <ScrollFlyIn delay={0.4} className="h-full">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <ProductCategoryCard
+                  title="Sunflower"
+                  description="Sunflower seeds with high oil content for various conditions"
+                  image="/images/sunflower.jpg"
+                  href="/products/sunflower"
+                />
+              </div>
+            </ScrollFlyIn>
+            <ScrollFlyIn delay={0.5} className="h-full">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <ProductCategoryCard
+                  title="Other Crops"
+                  description="Explore our cowpeas, sugarbeans, sorghum and other varieties"
+                  image="/images/other-crops.jpg"
+                  href="/products/other"
+                />
+              </div>
+            </ScrollFlyIn>
           </div>
         </div>
       </section>
@@ -178,40 +197,44 @@ export default async function Home() {
 
           <div className="flex flex-col md:flex-row justify-center items-stretch gap-8 max-w-5xl mx-auto">
             {/* Service 1 */}
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center md:w-1/2 border-2 border-transparent">
-              <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
-                <Sprout className="h-12 w-12 text-green-700" />
+            <ScrollFlyIn delay={0} className="md:w-1/2">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
+                  <Sprout className="h-12 w-12 text-green-700" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Outgrowing</h3>
+                <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
+                  Partner with us for seed multiplication and production through our outgrower programs. Join a network of successful seed producers.
+                </p>
+                <Link 
+                  href="/services/outgrowing" 
+                  className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
+                >
+                  Learn more 
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Outgrowing</h3>
-              <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
-                Partner with us for seed multiplication and production through our outgrower programs. Join a network of successful seed producers.
-              </p>
-              <Link 
-                href="/services/outgrowing" 
-                className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
-              >
-                Learn more 
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
+            </ScrollFlyIn>
             
             {/* Service 2 */}
-            <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center md:w-1/2 border-2 border-transparent">
-              <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
-                <Leaf className="h-12 w-12 text-green-700" />
+            <ScrollFlyIn delay={0.15} className="md:w-1/2">
+              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
+                  <Leaf className="h-12 w-12 text-green-700" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Agronomic Support</h3>
+                <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
+                  Access expert advice on planting guides, pest control, and crop management from our experienced agronomists.
+                </p>
+                <Link 
+                  href="/agronomy" 
+                  className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
+                >
+                  Learn more 
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Agronomic Support</h3>
-              <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
-                Access expert advice on planting guides, pest control, and crop management from our experienced agronomists.
-              </p>
-              <Link 
-                href="/agronomy" 
-                className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
-              >
-                Learn more 
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
+            </ScrollFlyIn>
           </div>
         </div>
       </section>
@@ -229,27 +252,33 @@ export default async function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="testimonial-card">
-              <TestimonialCard
-                quote="ARDA Seeds' maize varieties have consistently given me excellent yields, even during drought seasons. The quality is unmatched."
-                author="John Moyo"
-                role="Commercial Farmer, Mashonaland"
-              />
-            </div>
-            <div className="testimonial-card">
-              <TestimonialCard
-                quote="The technical support from ARDA's agronomists has been invaluable for improving my farming practices and increasing productivity."
-                author="Sarah Mutasa"
-                role="Smallholder Farmer, Manicaland"
-              />
-            </div>
-            <div className="testimonial-card">
-              <TestimonialCard
-                quote="I've been using ARDA's soybean seeds for five years now and the quality is always outstanding. Highly recommended!"
-                author="David Ncube"
-                role="Farm Manager, Midlands"
-              />
-            </div>
+            <ScrollFlyIn delay={0} className="h-full">
+              <div className="testimonial-card h-full">
+                <TestimonialCard
+                  quote="ARDA Seeds' maize varieties have consistently given me excellent yields, even during drought seasons. The quality is unmatched."
+                  author="John Moyo"
+                  role="Commercial Farmer, Mashonaland"
+                />
+              </div>
+            </ScrollFlyIn>
+            <ScrollFlyIn delay={0.1} className="h-full">
+              <div className="testimonial-card h-full">
+                <TestimonialCard
+                  quote="The technical support from ARDA's agronomists has been invaluable for improving my farming practices and increasing productivity."
+                  author="Sarah Mutasa"
+                  role="Smallholder Farmer, Manicaland"
+                />
+              </div>
+            </ScrollFlyIn>
+            <ScrollFlyIn delay={0.2} className="h-full">
+              <div className="testimonial-card h-full">
+                <TestimonialCard
+                  quote="I've been using ARDA's soybean seeds for five years now and the quality is always outstanding. Highly recommended!"
+                  author="David Ncube"
+                  role="Farm Manager, Midlands"
+                />
+              </div>
+            </ScrollFlyIn>
           </div>
         </div>
       </section>

@@ -28,7 +28,8 @@ function getRedirectForRole(role: string): string {
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [status, setStatus] = useState<"loading" | "allowed" | "denied">("loading")
+  const [status, setStatus] = useState<"loading" | "allowed" | "redirecting" | "error">("loading")
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!pathname?.startsWith("/admin")) {
@@ -40,54 +41,70 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
       return
     }
 
+    if (!supabase) {
+      setErrorMessage("Admin access is unavailable. Supabase is not configured.")
+      setStatus("error")
+      return
+    }
+
+    let cancelled = false
+
     const check = async () => {
-      if (!supabase) {
-        setStatus("denied")
-        return
-      }
       const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      if (!session) {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (cancelled) return
+
+      if (!user) {
+        setStatus("redirecting")
         router.replace("/admin/login")
-        setStatus("denied")
         return
       }
-      const { data: profile } = await supabase
+
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("role")
-        .eq("id", session.user.id)
+        .eq("id", user.id)
         .single()
+      if (cancelled) return
 
       const role = (profile?.role as string) ?? null
       const validRoles = [SUPER_ADMIN_ROLE, ...ADMIN_SYSTEMS.map((s) => s.role)]
-      if (!role || !validRoles.includes(role)) {
+      if (error || !role || !validRoles.includes(role)) {
+        setStatus("redirecting")
         router.replace("/admin/login")
-        setStatus("denied")
         return
       }
       if (!canAccess(pathname, role)) {
+        setStatus("redirecting")
         router.replace(getRedirectForRole(role))
-        setStatus("denied")
         return
       }
       setStatus("allowed")
     }
 
     check()
+
+    return () => {
+      cancelled = true
+    }
   }, [pathname, router])
 
-  if (status === "loading") {
+  if (status === "allowed") {
+    return <>{children}</>
+  }
+
+  if (status === "error") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-green-700" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <p className="text-red-600 text-center">{errorMessage}</p>
       </div>
     )
   }
 
-  if (status === "denied") {
-    return null
-  }
-
-  return <>{children}</>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Loader2 className="h-8 w-8 animate-spin text-green-700" />
+    </div>
+  )
 }
