@@ -11,6 +11,7 @@ type HeroSlide = {
   image_url?: string;
   video_url?: string;
   title: string;
+  titleLine2?: string;
   subtitle: string;
 };
 
@@ -67,13 +68,18 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
             <video
               ref={(el) => {
                 videoRefs.current[i] = el;
+                if (el && i === index && el.readyState >= 2) {
+                  el.play().catch(() => {});
+                }
               }}
               src={slide.video_url}
+              poster={slide.image_url || "/images/Maize field.jpg"}
               autoPlay={i === index}
               loop
               muted
               playsInline
-              className="h-full w-full object-cover"
+              preload="auto"
+              className="absolute inset-0 h-full w-full object-cover"
             />
           ) : slide.image_url ? (
             <Image
@@ -91,7 +97,14 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
       <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-center text-white p-6">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            {slides[index].title}
+            {slides[index].titleLine2 ? (
+              <>
+                <span className="block">{slides[index].title}</span>
+                <span className="block">{slides[index].titleLine2}</span>
+              </>
+            ) : (
+              slides[index].title
+            )}
           </h1>
           <p className="text-xl md:text-2xl mb-6">
             {slides[index].subtitle}

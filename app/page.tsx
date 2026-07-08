@@ -28,7 +28,9 @@ export default async function Home() {
   const climateSmartSlide = {
     id: "climate-smart-seed",
     video_url: "/videos/seed-germination.mp4",
-    title: "Climate Smart Seed",
+    image_url: "/images/Maize field.jpg",
+    title: "Home of",
+    titleLine2: "Climate Smart Seed",
     subtitle: "Resilient varieties bred for changing seasons and sustainable harvests",
     sort_order: 0,
   };
