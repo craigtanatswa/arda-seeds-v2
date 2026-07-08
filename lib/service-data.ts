@@ -111,7 +111,7 @@ export const services: Service[] = [
     description:
       "Timely field operations are critical to crop performance. ARDA Seeds offers farm mechanisation services including tractor hire for primary and secondary tillage, planting, and spraying, as well as combine harvesters for efficient grain and seed harvesting. Our equipment helps smallholder and commercial farmers complete critical windows on time, reducing yield losses from delayed planting or harvest.",
     heroImage: "/images/Maize field.jpg",
-    image: "/images/Maize field.jpg",
+    image: "/images/farm-mechanisation-tractor.png",
     features: [
       "Tractor hire for ploughing, discing, ridging, and planting operations",
       "Combine harvester hire for maize, wheat, sorghum, and other grain crops",
