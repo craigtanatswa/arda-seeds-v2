@@ -217,19 +217,19 @@ export default function AboutPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-16 md:py-24">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-12 h-auto p-1 bg-stone-100 rounded-xl">
+          <TabsList className="grid w-full grid-cols-2 mb-12 h-auto p-1 bg-stone-100 rounded-xl">
             <TabsTrigger 
               value="company" 
               className="text-base md:text-lg py-4 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-300"
             >
               Our Company
             </TabsTrigger>
-            <TabsTrigger 
+            {/* <TabsTrigger 
               value="team"
               className="text-base md:text-lg py-4 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-300"
             >
               Our Team
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger 
               value="partners"
               className="text-base md:text-lg py-4 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-300"
@@ -264,14 +264,13 @@ export default function AboutPage() {
                   core values of integrity, excellence, and sustainability.
                 </p>
               </div>
-              <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-2xl group" style={{ animationDelay: '0.2s' }}>
+              <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-2xl group bg-white" style={{ animationDelay: '0.2s' }}>
                 <Image 
-                  src="/images/about-company.jpg" 
-                  alt="ARDA Seeds facility" 
+                  src="/images/ardalogo.png" 
+                  alt="ARDA Seeds logo" 
                   fill 
-                  className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                  className="object-contain p-8 transition-transform duration-700 group-hover:scale-110" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </div>
             </div>
 
@@ -382,13 +381,13 @@ export default function AboutPage() {
             <AchievementStats />
           </TabsContent>
 
-          {/* Team Tab */}
+          {/* Team Tab - commented out
           <TabsContent value="team" className="tab-content-animate">
             <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center decorative-line">
               Our Leadership Team
             </h2>
             
-            {/* Managing Director */}
+            Managing Director
             <div className="max-w-4xl mx-auto mb-16 bg-gradient-to-br from-white to-stone-50 rounded-2xl shadow-xl p-8 md:p-12">
               <div className="text-center">
                 <div className="relative h-80 w-80 mx-auto mb-8 rounded-full overflow-hidden shadow-2xl ring-4 ring-green-100">
@@ -412,7 +411,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Other Leadership */}
+            Other Leadership
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
               <div className="bg-gradient-to-br from-white to-stone-50 rounded-2xl shadow-lg p-8 card-hover">
                 <div className="text-center">
@@ -453,7 +452,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Team Expertise CTA */}
+            Team Expertise CTA
             <div className="text-center bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-xl p-12 text-white">
               <h2 className="text-3xl font-bold mb-6">Our Team's Expertise</h2>
               <p className="text-lg max-w-3xl mx-auto mb-8 leading-relaxed opacity-95">
@@ -466,6 +465,7 @@ export default function AboutPage() {
               </Button>
             </div>
           </TabsContent>
+          */}
 
           {/* Partners Tab */}
           <TabsContent value="partners" className="tab-content-animate">
