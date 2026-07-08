@@ -87,9 +87,9 @@ export default function Header() {
             <Link href="/about" className={`${navLinkStyles} ${isActive("/about") ? activeStyles : inactiveStyles}`}>
               About Us
             </Link>
-            <Link href="/news" className={`${navLinkStyles} ${isActive("/news") ? activeStyles : inactiveStyles}`}>
+            {/* <Link href="/news" className={`${navLinkStyles} ${isActive("/news") ? activeStyles : inactiveStyles}`}>
               News
-            </Link>
+            </Link> */}
             <Link href="/careers" className={`${navLinkStyles} ${isActive("/careers") ? activeStyles : inactiveStyles}`}>
               Careers
             </Link>
@@ -254,13 +254,13 @@ export default function Header() {
               >
                 About Us
               </Link>
-              <Link
+              {/* <Link
                 href="/news"
                 className="px-3 py-2 text-gray-700 hover:text-green-700"
                 onClick={() => setIsMenuOpen(false)}
               >
                 News
-              </Link>
+              </Link> */}
               <Link
                 href="/careers"
                 className="px-3 py-2 text-gray-700 hover:text-green-700"

@@ -1,12 +1,12 @@
 import type { Metadata } from "next"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Calendar } from "lucide-react"
-import NewsSlideshow from "@/components/news-slideshow"
-import "./news-styles.css"
+// import Link from "next/link"
+// import Image from "next/image"
+// import { Button } from "@/components/ui/button"
+// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Badge } from "@/components/ui/badge"
+// import { ArrowRight, Calendar } from "lucide-react"
+// import NewsSlideshow from "@/components/news-slideshow"
+// import "./news-styles.css"
 
 export const metadata: Metadata = {
   title: "News & Updates | ARDA Seeds",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 }
 
 // Featured news slides
-const featuredSlides = [
+/* const featuredSlides = [
   {
     id: 1,
     image: "/images/news-1.jpg",
@@ -46,12 +46,17 @@ const featuredSlides = [
     excerpt: "We are excited to announce our new research partnership aimed at developing climate-smart seed varieties for Zimbabwean farmers. This collaboration will accelerate our innovation in breeding programs and bring cutting-edge agricultural solutions to market.",
     link: "/news/research-partnership"
   }
-]
+] */
 
+export default function NewsPage() {
+  return <div className="min-h-screen" />
+}
+
+/* News page content — commented out
 export default function NewsPage() {
   return (
     <div className="min-h-screen news-page">
-      {/* Hero Section */}
+      Hero Section
       <div className="bg-gradient-to-br from-green-700 via-green-600 to-emerald-700 text-white py-16 px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse" />
@@ -71,7 +76,7 @@ export default function NewsPage() {
       </div>
 
       <div className="container mx-auto px-4 py-16 max-w-7xl">
-        {/* Featured News Slideshow */}
+        Featured News Slideshow
         <div className="mb-16">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 section-header">Featured News</h2>
@@ -80,7 +85,7 @@ export default function NewsPage() {
           <NewsSlideshow slides={featuredSlides} />
         </div>
 
-        {/* More News Grid */}
+        More News Grid
         <div className="mb-16">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 section-header">More Updates</h2>
@@ -193,7 +198,7 @@ export default function NewsPage() {
           </div>
         </div>
 
-        {/* CTA Section */}
+        CTA Section
         <div className="relative py-16 px-8 rounded-3xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-700 via-green-600 to-emerald-700"></div>
           <div className="absolute inset-0 opacity-10">
@@ -226,3 +231,4 @@ export default function NewsPage() {
     </div>
   )
 }
+*/

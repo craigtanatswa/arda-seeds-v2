@@ -56,11 +56,11 @@ export default function Footer() {
                   About Us
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/news" className="hover:text-green-400">
                   News & Updates
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/careers" className="hover:text-green-400">
                   Careers

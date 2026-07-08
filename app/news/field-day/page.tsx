@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Calendar, Share2, Facebook, Twitter, Linkedin } from "lucide-react"
-import "../news-styles.css"
+// import Link from "next/link"
+// import Image from "next/image"
+// import { Button } from "@/components/ui/button"
+// import { Badge } from "@/components/ui/badge"
+// import { ArrowLeft, Calendar, Share2, Facebook, Twitter, Linkedin } from "lucide-react"
+// import "../news-styles.css"
 
 export const metadata: Metadata = {
   title: "ARDA Seeds Launches New Drought-Resistant Maize Variety | ARDA Seeds News",
@@ -12,9 +12,14 @@ export const metadata: Metadata = {
 }
 
 export default function DroughtResistantMaizePage() {
+  return <div className="min-h-screen" />
+}
+
+/* News article page content — commented out
+export default function DroughtResistantMaizePage() {
   return (
     <div className="min-h-screen news-page">
-      {/* Hero Image */}
+      Hero Image
       <div className="relative h-[400px] md:h-[600px] overflow-hidden">
         <Image
           src="/images/news-1.jpg"
@@ -49,10 +54,10 @@ export default function DroughtResistantMaizePage() {
         </div>
       </div>
 
-      {/* Article Content */}
+      Article Content
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <article className="prose prose-lg max-w-none">
-          {/* Social Share */}
+          Social Share
           <div className="flex items-center justify-between mb-12 pb-8 border-b">
             <div className="flex items-center gap-3">
               <span className="text-gray-600 font-medium">Share this article:</span>
@@ -70,12 +75,12 @@ export default function DroughtResistantMaizePage() {
             </div>
           </div>
 
-          {/* Lead Paragraph */}
+          Lead Paragraph
           <p className="text-xl text-gray-700 leading-relaxed mb-8">
             <strong>Harare, Zimbabwe</strong> – ARDA Seeds is proud to announce the launch of our newest maize variety, <strong>ZS270</strong>, specifically bred for exceptional performance under drought conditions. This groundbreaking variety represents years of dedicated research and development, combining early maturity with outstanding yield potential.
           </p>
 
-          {/* Main Content */}
+          Main Content
           <h2 className="text-3xl font-bold mt-12 mb-6">A Game-Changer for Zimbabwean Farmers</h2>
           <p className="text-gray-700 leading-relaxed mb-6">
             ZS270 is designed to address one of the most pressing challenges facing farmers in Zimbabwe and across Southern Africa: unpredictable rainfall patterns and prolonged dry spells. Through advanced breeding techniques and rigorous field testing across multiple ecological zones, our research team has developed a variety that maintains excellent yield potential even under water-stressed conditions.
@@ -144,7 +149,7 @@ export default function DroughtResistantMaizePage() {
             For more information about ZS270 or any of our other maize varieties, please contact our customer service team or visit your nearest authorized ARDA Seeds dealer.
           </p>
 
-          {/* Call to Action */}
+          Call to Action
           <div className="mt-12 p-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200">
             <h3 className="text-2xl font-bold mb-4">Interested in ZS270?</h3>
             <p className="text-gray-700 mb-6">
@@ -161,7 +166,7 @@ export default function DroughtResistantMaizePage() {
           </div>
         </article>
 
-        {/* Related Articles */}
+        Related Articles
         <div className="mt-16 pt-12 border-t">
           <h2 className="text-3xl font-bold mb-8">Related News</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -200,3 +205,4 @@ export default function DroughtResistantMaizePage() {
     </div>
   )
 }
+*/
