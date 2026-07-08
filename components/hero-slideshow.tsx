@@ -2,23 +2,47 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function HeroSlideshow({ slides }: { slides: Array<{ id: string; image_url: string; title: string; subtitle: string }> }) {
-  const [index, setIndex] = useState(0);
+type HeroSlide = {
+  id: string | number;
+  image_url?: string;
+  video_url?: string;
+  title: string;
+  subtitle: string;
+};
 
-  // Auto-slide every 4 seconds
+export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
+  const [index, setIndex] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  // Image slides: 5 seconds; video slides: 10 seconds
   useEffect(() => {
     if (!slides || slides.length === 0) return;
 
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % slides.length);
-    }, 10000);
+    const currentSlide = slides[index];
+    const duration = currentSlide?.video_url ? 10000 : 5000;
 
-    return () => clearInterval(interval);
-  }, [slides]);
+    const timeout = setTimeout(() => {
+      setIndex((prev) => (prev + 1) % slides.length);
+    }, duration);
+
+    return () => clearTimeout(timeout);
+  }, [index, slides]);
+
+  useEffect(() => {
+    videoRefs.current.forEach((video, i) => {
+      if (!video) return;
+      if (i === index) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, [index, slides]);
 
   if (!slides || slides.length === 0) {
     return (
@@ -31,7 +55,7 @@ export default function HeroSlideshow({ slides }: { slides: Array<{ id: string; 
   return (
     <section className="relative h-[600px] w-full overflow-hidden">
 
-      {/* IMAGE FADE LAYERS */}
+      {/* SLIDE FADE LAYERS */}
       {slides.map((slide, i) => (
         <div
           key={slide.id}
@@ -39,13 +63,27 @@ export default function HeroSlideshow({ slides }: { slides: Array<{ id: string; 
             i === index ? "opacity-100" : "opacity-0"
           }`}
         >
-          <Image
-            src={slide.image_url}
-            alt={slide.title || "ARDA slide"}
-            fill
-            priority={i === 0}
-            className="object-cover"
-          />
+          {slide.video_url ? (
+            <video
+              ref={(el) => {
+                videoRefs.current[i] = el;
+              }}
+              src={slide.video_url}
+              autoPlay={i === index}
+              loop
+              muted
+              playsInline
+              className="h-full w-full object-cover"
+            />
+          ) : slide.image_url ? (
+            <Image
+              src={slide.image_url}
+              alt={slide.title || "ARDA slide"}
+              fill
+              priority={i === 0}
+              className="object-cover"
+            />
+          ) : null}
         </div>
       ))}
 

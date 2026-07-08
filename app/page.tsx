@@ -3,11 +3,20 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import ProductCategoryCard from "@/components/product-category-card";
 import TestimonialCard from "@/components/testimonial-card";
-import { ArrowRight, Leaf, Sprout, FlaskRoundIcon as Flask, Package, Check, TrendingUp, Shield } from "lucide-react";
+import { ArrowRight, Leaf, Sprout, FlaskRoundIcon as Flask, Package, Check, TrendingUp, Shield, GraduationCap, Tractor, Factory, Truck } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import HeroSlideshow from "@/components/hero-slideshow";
 import ScrollFlyIn from "@/components/scroll-fly-in";
+import { services } from "@/lib/service-data";
 import "./home-styles.css";
+
+const serviceIcons: Record<string, typeof Sprout> = {
+  outgrowing: Sprout,
+  "agronomic-support": GraduationCap,
+  "farm-mechanisation": Tractor,
+  "toll-processing": Factory,
+  transportation: Truck,
+};
 
 export default async function Home() {
   // Fetch slideshow images from Supabase, with fallback to local images
@@ -16,6 +25,14 @@ export default async function Home() {
     : { data: null };
 
   // Fallback to local images if no slides from database
+  const climateSmartSlide = {
+    id: "climate-smart-seed",
+    video_url: "/videos/seed-germination.mp4",
+    title: "Climate Smart Seed",
+    subtitle: "Resilient varieties bred for changing seasons and sustainable harvests",
+    sort_order: 0,
+  };
+
   const defaultSlides = [
     {
       id: 1,
@@ -40,7 +57,11 @@ export default async function Home() {
     }
   ];
 
-  const heroSlides = slides && slides.length > 0 ? slides : defaultSlides;
+  const baseSlides = slides && slides.length > 0 ? slides : defaultSlides;
+  const heroSlides = [
+    climateSmartSlide,
+    ...baseSlides.filter((slide) => slide.id !== climateSmartSlide.id),
+  ];
 
   return (
     <div className="flex flex-col overflow-hidden home-page">
@@ -195,46 +216,66 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-center items-stretch gap-8 max-w-5xl mx-auto">
-            {/* Service 1 */}
-            <ScrollFlyIn delay={0} className="md:w-1/2">
-              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
-                <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
-                  <Sprout className="h-12 w-12 text-green-700" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Outgrowing</h3>
-                <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
-                  Partner with us for seed multiplication and production through our outgrower programs. Join a network of successful seed producers.
-                </p>
-                <Link 
-                  href="/services/outgrowing" 
-                  className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
-                >
-                  Learn more 
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </ScrollFlyIn>
-            
-            {/* Service 2 */}
-            <ScrollFlyIn delay={0.15} className="md:w-1/2">
-              <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
-                <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
-                  <Leaf className="h-12 w-12 text-green-700" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Agronomic Support</h3>
-                <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
-                  Access expert advice on planting guides, pest control, and crop management from our experienced agronomists.
-                </p>
-                <Link 
-                  href="/agronomy" 
-                  className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
-                >
-                  Learn more 
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </ScrollFlyIn>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {services.slice(0, 3).map((service, i) => {
+              const Icon = serviceIcons[service.id] ?? Leaf;
+              return (
+                <ScrollFlyIn key={service.id} delay={i * 0.1} className="h-full">
+                  <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                    <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
+                      <Icon className="h-12 w-12 text-green-700" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4">{service.name}</h3>
+                    <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
+                      {service.shortDescription}
+                    </p>
+                    <Link
+                      href={`/services/${service.id}`}
+                      className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
+                    >
+                      Learn more
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                </ScrollFlyIn>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-8">
+            {services.slice(3).map((service, i) => {
+              const Icon = serviceIcons[service.id] ?? Leaf;
+              return (
+                <ScrollFlyIn key={service.id} delay={(i + 3) * 0.1} className="h-full">
+                  <div className="service-card bg-white p-10 rounded-2xl shadow-xl flex flex-col items-center text-center border-2 border-transparent h-full">
+                    <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-5 rounded-2xl mb-6 shadow-md">
+                      <Icon className="h-12 w-12 text-green-700" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4">{service.name}</h3>
+                    <p className="text-gray-600 leading-relaxed mb-6 flex-grow">
+                      {service.shortDescription}
+                    </p>
+                    <Link
+                      href={`/services/${service.id}`}
+                      className="mt-4 text-green-700 font-semibold flex items-center justify-center hover:text-green-800 transition-colors group"
+                    >
+                      Learn more
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                </ScrollFlyIn>
+              );
+            })}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/services"
+              className="inline-flex items-center text-green-700 font-semibold hover:text-green-800 transition-colors group"
+            >
+              View all services
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </section>

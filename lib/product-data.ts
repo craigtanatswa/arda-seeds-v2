@@ -1,5 +1,7 @@
 import type { Product } from "@/lib/types"
 
+export const maizeProductImage = "/images/maize-white.png"
+
 // Maize pack sizes (all varieties share same pricing per pricelist)
 const maizePackSizes = [
   { size: "2kg", price: 10 },
@@ -20,7 +22,7 @@ export const maizeProducts: Product[] = [
     yieldPotential: "10t/ha",
     features: ["Early maturing variety", "Good disease tolerance", "Drought tolerant", "Low nitrogen tolerance"],
     regions: ["Low potential areas", "Medium potential areas", "High potential areas (late crop)"],
-    image: "/images/maizeImages/GREEN MAIZE 3D.jpg",
+    image: maizeProductImage,
     featured: true,
     packSizes: maizePackSizes,
   },
@@ -40,7 +42,7 @@ export const maizeProducts: Product[] = [
       "Good disease tolerance",
     ],
     regions: ["All maize growing areas", "Drought prone areas", "High potential areas"],
-    image: "/images/maizeImages/GREEN MAIZE 3D.jpg",
+    image: maizeProductImage,
     featured: false,
     packSizes: maizePackSizes,
   },
@@ -60,7 +62,7 @@ export const maizeProducts: Product[] = [
       "Suitable for all agro-ecological zones",
     ],
     regions: ["All country's agro-ecological zones"],
-    image: "/images/maizeImages/GREEN MAIZE 3D.jpg",
+    image: maizeProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 9.5 },
@@ -85,7 +87,7 @@ export const maizeProducts: Product[] = [
       "Multiple cobbing (2-3 cobs per plant)",
     ],
     regions: ["All regions"],
-    image: "/images/maizeImages/GREEN MAIZE 3D.jpg",
+    image: maizeProductImage,
     featured: false,
     packSizes: [
       { size: "2kg", price: 9.5 },
@@ -110,7 +112,7 @@ export const maizeProducts: Product[] = [
       "Widely adapted to multiple regions",
     ],
     regions: ["Natural Region IIb", "Natural Region III", "Natural Region IV"],
-    image: "/images/maizeImages/GREEN MAIZE 3D.jpg",
+    image: maizeProductImage,
     featured: false,
     packSizes: maizePackSizes,
   },

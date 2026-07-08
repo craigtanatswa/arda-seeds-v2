@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { FilterState } from "@/app/products/page"
 import {
+  maizeProductImage,
   maizeProducts,
   wheatProducts,
   soybeanProducts,
@@ -17,7 +18,7 @@ const categories = [
     id: "maize",
     name: "Maize",
     description: "High-yielding maize varieties with excellent disease resistance",
-    image: "/images/maize.jpg",
+    image: maizeProductImage,
     products: maizeProducts,
   },
   {
@@ -52,21 +53,21 @@ const categories = [
     id: "cowpeas",
     name: "African Traditional Peas",
     description: "Early maturing cowpea varieties with resistance to pests and diseases",
-    image: "/images/cowpeas.jpg",
+    image: "/images/cowpeas-seed.jpg",
     products: cowpeaProducts,
   },
   {
     id: "sugarbeans",
     name: "Sugarbeans",
     description: "Drought-tolerant sugarbeans with high yield potential",
-    image: "/images/sugarbeans.jpg",
+    image: "/images/sugarbean-seed.jpg",
     products: sugarBeanProducts,
   },
   {
     id: "sorghum",
     name: "Sorghum",
     description: "Sorghum varieties adapted to different regions with good disease tolerance",
-    image: "/images/sorghum.jpg",
+    image: "/images/sorghum-seed.jpg",
     products: sorghumProducts,
   },
 ]

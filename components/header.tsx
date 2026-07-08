@@ -71,8 +71,13 @@ export default function Header() {
                   Services <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild><Link href="/services">All Services</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href="/services/outgrowing">Outgrowing</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/services/agronomic-support">Agronomic Support & Training</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/services/farm-mechanisation">Farm Mechanisation</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/services/toll-processing">Toll Processing</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/services/transportation">Transportation</Link></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -193,11 +198,46 @@ export default function Header() {
               <div className="border-t pt-2">
                 <p className="px-3 font-medium text-sm text-gray-500">Services</p>
                 <Link
+                  href="/services"
+                  className="px-6 py-2 text-gray-700 hover:text-green-700 block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  All Services
+                </Link>
+                <Link
                   href="/services/outgrowing"
                   className="px-6 py-2 text-gray-700 hover:text-green-700 block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Outgrowing
+                </Link>
+                <Link
+                  href="/services/agronomic-support"
+                  className="px-6 py-2 text-gray-700 hover:text-green-700 block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Agronomic Support & Training
+                </Link>
+                <Link
+                  href="/services/farm-mechanisation"
+                  className="px-6 py-2 text-gray-700 hover:text-green-700 block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Farm Mechanisation
+                </Link>
+                <Link
+                  href="/services/toll-processing"
+                  className="px-6 py-2 text-gray-700 hover:text-green-700 block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Toll Processing
+                </Link>
+                <Link
+                  href="/services/transportation"
+                  className="px-6 py-2 text-gray-700 hover:text-green-700 block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Transportation
                 </Link>
               </div>
               <Link

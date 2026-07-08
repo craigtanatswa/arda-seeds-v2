@@ -255,6 +255,11 @@ export default function AboutPage() {
                   superior performance in terms of yield, disease resistance, and adaptability.
                 </p>
                 <p className="text-gray-700 text-lg leading-relaxed">
+                  ARDA Seeds (PVT) Ltd is a subsidiary of the Mutapa Investment Fund, operating within a broader
+                  national investment framework committed to driving agricultural development and economic growth
+                  across Zimbabwe.
+                </p>
+                <p className="text-gray-700 text-lg leading-relaxed">
                   Today, ARDA Seeds continues to expand its product range and geographical reach, while maintaining its
                   core values of integrity, excellence, and sustainability.
                 </p>
@@ -267,6 +272,37 @@ export default function AboutPage() {
                   className="object-cover transition-transform duration-700 group-hover:scale-110" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              </div>
+            </div>
+
+            {/* Parent Company */}
+            <div className="mb-20 bg-gradient-to-br from-white to-stone-50 rounded-2xl shadow-lg p-8 md:p-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                <div className="flex justify-center">
+                  <div className="relative w-full max-w-xs h-40 md:h-48">
+                    <Image
+                      src="/images/mutapa-logo.png"
+                      alt="Mutapa Investment Fund logo"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold decorative-line whitespace-nowrap">
+                    Subsidiary of the Mutapa Investment Fund
+                  </h3>
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    ARDA Seeds operates as a subsidiary of the Mutapa Investment Fund, benefiting from strategic
+                    backing and a shared commitment to transforming Zimbabwe&apos;s agricultural sector. This partnership
+                    strengthens our capacity to invest in seed research, expand production, and deliver quality seed
+                    solutions to farmers nationwide.
+                  </p>
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    As part of the Mutapa Investment Fund portfolio, we align our operations with a long-term vision
+                    for food security, rural development, and sustainable agricultural enterprise.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -388,10 +424,10 @@ export default function AboutPage() {
                       className="object-cover team-image"
                     />
                   </div>
-                  <h3 className="text-2xl font-semibold mb-2">Jane Smith</h3>
+                  <h3 className="text-2xl font-semibold mb-2">Innocent Musiiwa</h3>
                   <p className="text-green-700 text-lg mb-4 font-medium">General Manager</p>
                   <p className="text-gray-700 leading-relaxed">
-                    Jane oversees our day-to-day operations, ensuring that we maintain the highest standards of quality
+                    Innocent oversees our day-to-day operations, ensuring that we maintain the highest standards of quality
                     and service excellence.
                   </p>
                 </div>
@@ -402,15 +438,15 @@ export default function AboutPage() {
                   <div className="relative h-64 w-64 mx-auto mb-6 rounded-full overflow-hidden shadow-xl ring-4 ring-green-100">
                     <Image
                       src="/images//aboutus/leadership/corporate-services-manager.png"
-                      alt="Commercial Services Manager"
+                      alt="Corporate Services Manager"
                       fill
                       className="object-cover team-image"
                     />
                   </div>
-                  <h3 className="text-2xl font-semibold mb-2">Robert Johnson</h3>
-                  <p className="text-green-700 text-lg mb-4 font-medium">Commercial Services Manager</p>
+                  <h3 className="text-2xl font-semibold mb-2">Chengetai Nguluwe</h3>
+                  <p className="text-green-700 text-lg mb-4 font-medium">Corporate Services Manager</p>
                   <p className="text-gray-700 leading-relaxed">
-                    Robert leads our commercial team, developing strategic partnerships and ensuring that our products
+                    Chengetai leads our corporate services team, developing strategic partnerships and ensuring that our products
                     reach farmers across the country.
                   </p>
                 </div>
