@@ -473,14 +473,14 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
               <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50">
                 <CardContent className="pt-8 pb-8 px-6">
-                  <div className="relative h-24 mb-6 flex items-center justify-center">
+                  {/* <div className="relative h-24 mb-6 flex items-center justify-center">
                     <Image
                       src="/images/partner-1.jpg"
                       alt="Zimbabwe Seed Producers Association"
                       fill
                       className="object-contain"
                     />
-                  </div>
+                  </div> */}
                   <h3 className="text-xl font-semibold mb-3">Zimbabwe Seed Producers Association</h3>
                   <p className="text-gray-700 leading-relaxed">
                     As a member of the Zimbabwe Seed Producers Association, we collaborate with other seed producers to
@@ -491,14 +491,14 @@ export default function AboutPage() {
 
               <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50">
                 <CardContent className="pt-8 pb-8 px-6">
-                  <div className="relative h-24 mb-6 flex items-center justify-center">
+                  {/* <div className="relative h-24 mb-6 flex items-center justify-center">
                     <Image
                       src="/images/partner-2.jpg"
                       alt="Agricultural Research Council"
                       fill
                       className="object-contain"
                     />
-                  </div>
+                  </div> */}
                   <h3 className="text-xl font-semibold mb-3">Agricultural Research Council</h3>
                   <p className="text-gray-700 leading-relaxed">
                     Our partnership with the Agricultural Research Council enables us to stay at the forefront of
@@ -509,14 +509,14 @@ export default function AboutPage() {
 
               <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50">
                 <CardContent className="pt-8 pb-8 px-6">
-                  <div className="relative h-24 mb-6 flex items-center justify-center">
+                  {/* <div className="relative h-24 mb-6 flex items-center justify-center">
                     <Image 
                       src="/images/partner-3.jpg" 
                       alt="Farmer City" 
                       fill 
                       className="object-contain" 
                     />
-                  </div>
+                  </div> */}
                   <h3 className="text-xl font-semibold mb-3">Farmer City</h3>
                   <p className="text-gray-700 leading-relaxed">
                     Farmer City is one of our key retail partners, helping us distribute our seeds to farmers across the
