@@ -1,6 +1,13 @@
 import type { Product } from "@/lib/types"
 
 export const maizeProductImage = "/images/maize-white.png"
+export const wheatProductImage = "/images/wheat.jpg"
+export const soybeanProductImage = "/images/soybeans.jpg"
+export const groundnutProductImage = "/images/groundnuts.jpg"
+export const sunflowerProductImage = "/images/sunflower.jpg"
+export const cowpeaProductImage = "/images/cowpeas-seed.jpg"
+export const sugarBeanProductImage = "/images/sugarbean-seed.jpg"
+export const sorghumProductImage = "/images/sorghum-seed.jpg"
 
 // Maize pack sizes (all varieties share same pricing per pricelist)
 const maizePackSizes = [
@@ -136,7 +143,7 @@ export const wheatProducts: Product[] = [
       "Good disease resistance to Leaf Rust, Stem Rust and Powdery Mildew",
     ],
     regions: ["Highveld", "Middleveld", "Lowveld"],
-    image: "/images/wheatImages/WHEAT 3D.jpg",
+    image: wheatProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 3.5 },
@@ -164,7 +171,7 @@ export const soybeanProducts: Product[] = [
       "High yields and excellent grades"
     ],
     regions: ["All soybean growing areas"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: soybeanProductImage,
     featured: true,
     packSizes: [
       { size: "25kg", price: 47 },
@@ -187,7 +194,7 @@ export const soybeanProducts: Product[] = [
       "Consistent high yields"
     ],
     regions: ["Highveld", "Middleveld", "Lowveld"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: soybeanProductImage,
     featured: true,
     packSizes: [
       { size: "50kg", price: 94 },
@@ -213,7 +220,7 @@ export const groundnutProducts: Product[] = [
       "High pod and kernel yields"
     ],
     regions: ["Lowveld", "Middleveld", "Highveld"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: groundnutProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 3 },
@@ -241,7 +248,7 @@ export const sunflowerProducts: Product[] = [
       "Average plant height: 200cm"
     ],
     regions: ["Marginal production areas", "Various ecological zones"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: sunflowerProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 8.6 },
@@ -265,7 +272,7 @@ export const sunflowerProducts: Product[] = [
       "Excellent adaptability"
     ],
     regions: ["Various ecological zones", "All sunflower growing areas"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: sunflowerProductImage,
     featured: true,
     packSizes: [
       { size: "5kg", price: 21.5 },
@@ -292,7 +299,7 @@ export const cowpeaProducts: Product[] = [
       "Suitable for regions III, IV & V"
     ],
     regions: ["Region III", "Region IV", "Region V"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: cowpeaProductImage,
     featured: true,
     packSizes: [
       { size: "5kg", price: 12.5 },
@@ -315,7 +322,7 @@ export const cowpeaProducts: Product[] = [
       "Recommended for regions III, IV & V"
     ],
     regions: ["Region III", "Region IV", "Region V"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: cowpeaProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 5 },
@@ -343,7 +350,7 @@ export const sugarBeanProducts: Product[] = [
       "Early maturing (80-85 days)"
     ],
     regions: ["All regions of Zimbabwe", "Various ecological zones"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: sugarBeanProductImage,
     featured: true,
     packSizes: [
       { size: "10kg", price: 43 },
@@ -367,7 +374,7 @@ export const sugarBeanProducts: Product[] = [
       "Good disease resistance"
     ],
     regions: ["Various ecological zones", "All sugar bean growing areas"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: sugarBeanProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 8.6 },
@@ -396,7 +403,7 @@ export const sorghumProducts: Product[] = [
       "Good disease tolerance"
     ],
     regions: ["Region IV", "Region V", "Drought prone areas"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: sorghumProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 5.2 },
@@ -422,7 +429,7 @@ export const sorghumProducts: Product[] = [
       "Suitable for grain and forage"
     ],
     regions: ["Region I", "Region II", "Region III", "Region IV"],
-    image: "/images/wheat/wheat3D.jpg",
+    image: sorghumProductImage,
     featured: true,
     packSizes: [
       { size: "2kg", price: 5.2 },
