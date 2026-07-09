@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "ARDA Seeds - Quality Agricultural Seeds",
   description:
     "ARDA Seeds is a leading supplier of high-quality agricultural seeds in Zimbabwe, offering a wide range of crop varieties including maize, wheat, groundnuts, and more.",
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
