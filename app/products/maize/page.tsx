@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import ProductList from "@/components/product-list"
-import { maizeProducts } from "@/lib/product-data"
+import { maizeProducts, maizeHeroImage } from "@/lib/product-data"
 import ProductHero from "@/components/product-hero"
 import "../products-styles.css"
 
@@ -16,7 +16,7 @@ export default function MaizePage() {
       <ProductHero
         title="Maize Seeds"
         description="Our maize varieties are bred for high yield potential, disease resistance, and adaptability to various growing conditions."
-        image="/images/maize-hero.jpg"
+        image={maizeHeroImage}
       />
 
       <div className="container mx-auto px-4 py-16 max-w-7xl">

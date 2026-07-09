@@ -1,6 +1,7 @@
 import type { Product } from "@/lib/types"
 
 export const maizeProductImage = "/images/maize-white.png"
+export const maizeHeroImage = "/images/maize-hero-white.png"
 export const wheatProductImage = "/images/wheat.jpg"
 export const soybeanProductImage = "/images/soybeans.jpg"
 export const groundnutProductImage = "/images/groundnuts.jpg"

@@ -196,7 +196,7 @@ export default async function Home() {
                   title="Other Crops"
                   description="Explore our cowpeas, sugarbeans, sorghum and other varieties"
                   image="/images/other-crops.jpg"
-                  href="/products/other"
+                  href="/products"
                 />
               </div>
             </ScrollFlyIn>
