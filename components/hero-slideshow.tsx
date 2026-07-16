@@ -77,7 +77,7 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : slide.image_url ? (
@@ -111,18 +111,24 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
+              asChild
               size="lg"
               className="bg-green-700 hover:bg-green-800"
             >
-              <Link href="/products">Explore Our Products</Link>
+              <Link href="/products" prefetch>
+                Explore Our Products
+              </Link>
             </Button>
 
             <Button
+              asChild
               size="lg"
               variant="outline"
               className="bg-white text-green-800 hover:bg-gray-100"
             >
-              <Link href="/quote">Request a Quote</Link>
+              <Link href="/quote" prefetch>
+                Request a Quote
+              </Link>
             </Button>
           </div>
         </div>
