@@ -27,7 +27,7 @@ export default async function Home() {
   // Fallback to local images if no slides from database
   const climateSmartSlide = {
     id: "climate-smart-seed",
-    video_url: "/videos/seed-germination.mp4",
+    video_url: "/videos/seed-germination-web.mp4",
     image_url: "/images/seed-germination-poster.png",
     title: "Home of",
     titleLine2: "Climate Smart Seed",

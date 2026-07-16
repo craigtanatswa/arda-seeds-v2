@@ -17,7 +17,6 @@ type HeroSlide = {
 
 export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
-  const [playingVideos, setPlayingVideos] = useState<Set<number>>(new Set());
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   // Image slides: 5 seconds; video slides: 10 seconds
@@ -35,8 +34,6 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
   }, [index, slides]);
 
   useEffect(() => {
-    setPlayingVideos(new Set());
-
     videoRefs.current.forEach((video, i) => {
       if (!video) return;
       if (i === index) {
@@ -68,36 +65,21 @@ export default function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
           }`}
         >
           {slide.video_url ? (
-            <>
-              {slide.image_url && !playingVideos.has(i) && (
-                <Image
-                  src={slide.image_url}
-                  alt={slide.title || "ARDA slide"}
-                  fill
-                  priority={i === 0}
-                  className="object-cover z-10"
-                />
-              )}
-              <video
-                ref={(el) => {
-                  videoRefs.current[i] = el;
-                  if (el && i === index && el.readyState >= 2) {
-                    el.play().catch(() => {});
-                  }
-                }}
-                src={slide.video_url}
-                poster={slide.image_url}
-                autoPlay={i === index}
-                loop
-                muted
-                playsInline
-                preload="auto"
-                onPlaying={() =>
-                  setPlayingVideos((prev) => new Set(prev).add(i))
+            <video
+              ref={(el) => {
+                videoRefs.current[i] = el;
+                if (el && i === index && el.readyState >= 2) {
+                  el.play().catch(() => {});
                 }
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            </>
+              }}
+              src={slide.video_url}
+              autoPlay={i === index}
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
           ) : slide.image_url ? (
             <Image
               src={slide.image_url}

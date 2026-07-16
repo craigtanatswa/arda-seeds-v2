@@ -512,14 +512,14 @@ export default function AboutPage() {
                   {/* <div className="relative h-24 mb-6 flex items-center justify-center">
                     <Image 
                       src="/images/partner-3.jpg" 
-                      alt="Farmer City" 
+                      alt="Farm and City" 
                       fill 
                       className="object-contain" 
                     />
                   </div> */}
-                  <h3 className="text-xl font-semibold mb-3">Farmer City</h3>
+                  <h3 className="text-xl font-semibold mb-3">Farm and City</h3>
                   <p className="text-gray-700 leading-relaxed">
-                    Farmer City is one of our key retail partners, helping us distribute our seeds to farmers across the
+                    Farm and City is one of our key retail partners, helping us distribute our seeds to farmers across the
                     country.
                   </p>
                 </CardContent>
