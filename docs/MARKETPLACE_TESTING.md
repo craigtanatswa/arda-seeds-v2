@@ -41,28 +41,30 @@ Use this checklist after deploying the migration and env vars.
 3. Open `/cart` → refresh the page → cart items should still be there (localStorage).
 4. Click **Checkout**.
 5. Enter contact details.
-   - **Test mode EcoCash/OneMoney:** phone must be a Paynow simulator number (not a real line):
+   - **Test mode EcoCash:** phone must be a Paynow simulator number (not a real line):
      - `0771111111` — success (~5s)
      - `0772222222` — delayed success (~30s)
      - `0773333333` — user cancelled
      - `0774444444` — insufficient balance
+   - **InnBucks:** uses authorization code + QR code in the InnBucks app (no EcoCash simulator numbers).
    - `PAYNOW_AUTH_EMAIL` must be your Paynow merchant login email (already set if working past the authemail error).
 6. Select a **city**, then a **collection point**.
 7. Choose a **payment method** on the site:
    - **EcoCash** → use a test number above (simulator; no real EcoCash prompt).
-   - **OneMoney** → same test numbers, but only after OneMoney is enabled on the Paynow integration (see below).
+   - **InnBucks** → you receive an authorization code and QR code; pay in the InnBucks app (must be enabled on Paynow integration — see below).
    - **Card / Zimswitch** → redirects to Paynow; choose **TESTING: Faked Success**.
 8. For EcoCash success (`0771111111`): wait a few seconds; confirmation should update to paid.
-9. Check emails after paid.
+9. For InnBucks: scan QR or enter code in InnBucks app; page should update when paid.
+10. Check emails after paid.
 
-**Pass:** Payment options appear on checkout; EcoCash/OneMoney never open the Paynow login page.
+**Pass:** Payment options appear on checkout; EcoCash/InnBucks never open the Paynow login page.
 
 ### Paynow dashboard setup (required for test)
 
 1. Log in to Paynow as the merchant (`ict@ardaseeds.co.zw` or your account).
 2. Open **Sell or Receive** → **3rd Party Site / Link** → integration **25688**.
-3. Ensure payment methods include **EcoCash** (and **OneMoney** if you want to test it).  
-   - OneMoney error *"does not have any ACTIVE 'onemoney' payment method"* means it is not enabled on this integration — turn it on or leave OneMoney for later.
+3. Ensure payment methods include **EcoCash** and **InnBucks** (if you want to test InnBucks).  
+   - InnBucks error *"does not have any ACTIVE 'innbucks' payment method"* means it is not enabled on this integration — turn it on in the Paynow dashboard.
 4. Stay in **test mode** until you have one successful test payment, then click **Request to be Set Live**.
 5. Restart `npm run dev` after env changes.
 
@@ -144,4 +146,4 @@ Use this checklist after deploying the migration and env vars.
 | Sales admin empty tables | Migration not applied; RLS role not `admin_sales` |
 | Paynow “authemail must match merchant email” (test mode) | Do not send customer email as authemail. Checkout now uses guest mode (empty authemail). |
 | EcoCash “must use a test case number” | In test mode use only `0771111111` / `0772222222` / `0773333333` / `0774444444` — not a real EcoCash number. See [Paynow Test Mode](https://developers.paynow.co.zw/docs/paynow/test_mode/). |
-| OneMoney “no ACTIVE onemoney payment method” | In Paynow dashboard enable OneMoney on integration 25688, or test EcoCash only until it is enabled. |
+| InnBucks “no ACTIVE innbucks payment method” | In Paynow dashboard enable InnBucks on integration 25688. |

@@ -15,6 +15,13 @@ declare module "paynow" {
     error?: string
     status: string
     instructions?: string
+    isInnbucks?: boolean
+    innbucks_info?: {
+      authorizationcode: string
+      deep_link_url: string
+      qr_code: string
+      expires_at: string
+    }[]
   }
 
   export class StatusResponse {

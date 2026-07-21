@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Trash2, ShoppingBag, Smartphone, CreditCard, Wallet } from "lucide-react"
+import { ArrowLeft, Trash2, ShoppingBag, Smartphone, CreditCard, Wallet, QrCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,7 +22,7 @@ import {
   isInsufficientBalanceError,
 } from "@/lib/payment-errors"
 import type { CollectionPoint } from "@/lib/types"
-import type { PaynowPaymentMethod } from "@/lib/paynow"
+import type { PaynowPaymentMethod, InnBucksPaymentInfo } from "@/lib/paynow"
 
 type Step = "cart" | "details" | "awaiting_payment"
 
@@ -39,9 +39,9 @@ const PAYMENT_OPTIONS: {
     hint: "Pay on your Econet phone — no Paynow login",
   },
   {
-    id: "onemoney",
-    label: "OneMoney",
-    hint: "Pay on your NetOne phone — no Paynow login",
+    id: "innbucks",
+    label: "InnBucks",
+    hint: "Pay in the InnBucks app using a code or QR scan",
   },
   {
     id: "card",
@@ -73,6 +73,7 @@ export default function CartPage() {
   const [paymentInstructions, setPaymentInstructions] = useState("")
   const [awaitingMethod, setAwaitingMethod] = useState<PaynowPaymentMethod | "">("")
   const [awaitingTotal, setAwaitingTotal] = useState(0)
+  const [innbucksInfo, setInnbucksInfo] = useState<InnBucksPaymentInfo | null>(null)
 
   function showInsufficientBalanceModal(
     method: PaynowPaymentMethod | "",
@@ -214,6 +215,7 @@ export default function CartPage() {
           (data.instructions as string) ||
             "Approve the payment prompt on your phone to complete the order."
         )
+        setInnbucksInfo((data.innbucks as InnBucksPaymentInfo | undefined) ?? null)
         setAwaitingMethod(paymentMethod)
         setStep("awaiting_payment")
         setSubmitting(false)
@@ -275,31 +277,85 @@ export default function CartPage() {
   }
 
   if (step === "awaiting_payment") {
+    const isInnbucks = awaitingMethod === "innbucks"
+
     return (
       <>
         {insufficientBalanceDialog}
         <div className="container mx-auto px-4 py-16 max-w-lg text-center">
-        <div className="bg-white rounded-2xl border border-gray-200 p-10">
-          <Smartphone className="h-14 w-14 text-green-700 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-3">Complete payment on your phone</h1>
-          <p className="text-gray-600 mb-2">
-            {awaitingMethod === "ecocash" ? "EcoCash" : "OneMoney"} prompt sent for order{" "}
-            <strong>{orderRef}</strong>.
-          </p>
-          <p className="text-gray-700 mb-6 leading-relaxed">{paymentInstructions}</p>
-          <p className="text-sm text-gray-500 mb-6">
-            This page updates automatically when payment is confirmed.
-          </p>
-          <Button
-            asChild
-            variant="outline"
-            className="w-full border-green-700 text-green-700"
-          >
-            <Link href={`/order/confirmation?ref=${encodeURIComponent(orderRef)}`}>
-              Check payment status
-            </Link>
-          </Button>
-        </div>
+          <div className="bg-white rounded-2xl border border-gray-200 p-10">
+            {isInnbucks ? (
+              <>
+                <QrCode className="h-14 w-14 text-green-700 mx-auto mb-4" />
+                <h1 className="text-2xl font-bold mb-3">Complete payment in InnBucks</h1>
+                <p className="text-gray-600 mb-2">
+                  Order <strong>{orderRef}</strong> — US$ {awaitingTotal.toFixed(2)}
+                </p>
+                {innbucksInfo ? (
+                  <div className="my-6 space-y-4">
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">
+                        Authorization code
+                      </p>
+                      <p className="text-2xl font-bold tracking-widest text-gray-900 break-all">
+                        {innbucksInfo.authorizationCode}
+                      </p>
+                      {innbucksInfo.expiresAt && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          Expires: {innbucksInfo.expiresAt}
+                        </p>
+                      )}
+                    </div>
+                    {innbucksInfo.qrCodeUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={innbucksInfo.qrCodeUrl}
+                        alt="InnBucks payment QR code"
+                        className="mx-auto rounded-lg border border-gray-200"
+                        width={200}
+                        height={200}
+                      />
+                    )}
+                    {innbucksInfo.deepLinkUrl && (
+                      <Button
+                        asChild
+                        className="w-full bg-green-700 hover:bg-green-800 font-semibold"
+                      >
+                        <a href={innbucksInfo.deepLinkUrl}>Open InnBucks app</a>
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-700 mb-6 leading-relaxed">{paymentInstructions}</p>
+                )}
+                <p className="text-sm text-gray-500 mb-6">
+                  Scan the QR code or enter the code in the InnBucks app. This page updates
+                  automatically when payment is confirmed.
+                </p>
+              </>
+            ) : (
+              <>
+                <Smartphone className="h-14 w-14 text-green-700 mx-auto mb-4" />
+                <h1 className="text-2xl font-bold mb-3">Complete payment on your phone</h1>
+                <p className="text-gray-600 mb-2">
+                  EcoCash prompt sent for order <strong>{orderRef}</strong>.
+                </p>
+                <p className="text-gray-700 mb-6 leading-relaxed">{paymentInstructions}</p>
+                <p className="text-sm text-gray-500 mb-6">
+                  This page updates automatically when payment is confirmed.
+                </p>
+              </>
+            )}
+            <Button
+              asChild
+              variant="outline"
+              className="w-full border-green-700 text-green-700"
+            >
+              <Link href={`/order/confirmation?ref=${encodeURIComponent(orderRef)}`}>
+                Check payment status
+              </Link>
+            </Button>
+          </div>
         </div>
       </>
     )
@@ -333,7 +389,7 @@ export default function CartPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
           <h1 className="text-2xl font-bold mb-2">Checkout</h1>
           <p className="text-sm text-gray-500 mb-6">
-            Choose your collection point and payment method. EcoCash and OneMoney stay on this site
+            Choose your collection point and payment method. EcoCash and InnBucks stay on this site
             — no Paynow login page.
           </p>
 
@@ -373,27 +429,15 @@ export default function CartPage() {
           </div>
 
           <div className="mb-4">
-            <Label htmlFor="phone">Mobile number (for EcoCash / OneMoney) *</Label>
+            <Label htmlFor="phone">Mobile number (for EcoCash / InnBucks) *</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder={
-                process.env.NEXT_PUBLIC_PAYNOW_TEST_MODE === "true"
-                  ? "0771111111 (Paynow test number)"
-                  : "0771234567"
-              }
+              placeholder="0771234567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className={`mt-1 ${errors.phone ? "border-red-500" : ""}`}
             />
-            {process.env.NEXT_PUBLIC_PAYNOW_TEST_MODE === "true" && (
-              <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                Paynow is in <strong>test mode</strong>. Use simulator numbers only:{" "}
-                <code>0771111111</code> (success), <code>0772222222</code> (delayed),{" "}
-                <code>0773333333</code> (cancelled), <code>0774444444</code> (insufficient
-                balance). Real phone numbers will be rejected.
-              </p>
-            )}
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </div>
 
@@ -466,6 +510,8 @@ export default function CartPage() {
                     <span className="mt-0.5 text-green-700">
                       {option.id === "card" ? (
                         <CreditCard className="h-5 w-5" />
+                      ) : option.id === "innbucks" ? (
+                        <QrCode className="h-5 w-5" />
                       ) : (
                         <Smartphone className="h-5 w-5" />
                       )}
@@ -515,8 +561,8 @@ export default function CartPage() {
                 : "Sending payment request…"
               : paymentMethod === "ecocash"
                 ? "Pay with EcoCash"
-                : paymentMethod === "onemoney"
-                  ? "Pay with OneMoney"
+                : paymentMethod === "innbucks"
+                  ? "Pay with InnBucks"
                   : paymentMethod === "card"
                     ? "Pay with Card / Zimswitch"
                     : "Pay now"}
@@ -589,7 +635,7 @@ export default function CartPage() {
       </div>
 
       <p className="text-xs text-gray-400 mb-6">
-        Orders are sold in catalogue pack sizes only. At checkout you choose EcoCash, OneMoney, or
+        Orders are sold in catalogue pack sizes only. At checkout you choose EcoCash, InnBucks, or
         card.
       </p>
 

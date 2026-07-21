@@ -1,6 +1,13 @@
 import { Paynow } from "paynow"
 
-export type PaynowPaymentMethod = "ecocash" | "onemoney" | "card"
+export type PaynowPaymentMethod = "ecocash" | "innbucks" | "card"
+
+export type InnBucksPaymentInfo = {
+  authorizationCode: string
+  deepLinkUrl: string
+  qrCodeUrl: string
+  expiresAt: string
+}
 
 export function getAppBaseUrl() {
   return (
@@ -23,7 +30,7 @@ export function resolvePaynowAuthEmailForWeb(_customerEmail: string): string | u
 }
 
 /**
- * Express mobile (EcoCash / OneMoney) requires a valid authemail.
+ * Express checkout (EcoCash / InnBucks) requires a valid authemail.
  * Test integrations often require the merchant's Paynow email — set PAYNOW_AUTH_EMAIL.
  * Live: prefer the customer email so Paynow can associate the payer.
  */
@@ -33,7 +40,7 @@ export function resolvePaynowAuthEmailForExpress(customerEmail: string): string 
 
   if (process.env.PAYNOW_TEST_MODE === "true") {
     throw new Error(
-      "EcoCash/OneMoney express checkout needs PAYNOW_AUTH_EMAIL set to your Paynow merchant email while the integration is in test mode."
+      "EcoCash/InnBucks express checkout needs PAYNOW_AUTH_EMAIL set to your Paynow merchant email while the integration is in test mode."
     )
   }
 

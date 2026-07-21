@@ -20,7 +20,7 @@ interface OrderBody {
   items: { productId: string; packSize: string; quantity: number }[]
 }
 
-const MOBILE_METHODS = new Set<PaynowPaymentMethod>(["ecocash", "onemoney"])
+const EXPRESS_METHODS = new Set<PaynowPaymentMethod>(["ecocash", "innbucks"])
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,9 +38,9 @@ export async function POST(req: NextRequest) {
     if (!collectionPointId) {
       return NextResponse.json({ error: "Please select a collection point." }, { status: 400 })
     }
-    if (!paymentMethod || !["ecocash", "onemoney", "card"].includes(paymentMethod)) {
+    if (!paymentMethod || !["ecocash", "innbucks", "card"].includes(paymentMethod)) {
       return NextResponse.json(
-        { error: "Please choose a payment method: EcoCash, OneMoney, or Card." },
+        { error: "Please choose a payment method: EcoCash, InnBucks, or Card." },
         { status: 400 }
       )
     }
@@ -132,9 +132,9 @@ export async function POST(req: NextRequest) {
     }
 
     const paynow = createPaynowClient(orderRef)
-    const isMobile = MOBILE_METHODS.has(paymentMethod)
+    const isExpress = EXPRESS_METHODS.has(paymentMethod)
 
-    const authEmail = isMobile
+    const authEmail = isExpress
       ? resolvePaynowAuthEmailForExpress(email)
       : resolvePaynowAuthEmailForWeb(email)
 
@@ -146,14 +146,14 @@ export async function POST(req: NextRequest) {
       payment.add(`${line.productName} (${line.packSize})`, line.unitPrice, line.quantity)
     }
 
-    if (isMobile) {
+    if (isExpress) {
       const mobilePhone = normalizeZimbabwePhone(phone)
       if (!/^07\d{8}$/.test(mobilePhone)) {
         await supabaseServer.from("orders").delete().eq("id", order.id)
         return NextResponse.json(
           {
             error:
-              "Enter a valid Zimbabwe mobile number (e.g. 0771234567) for EcoCash or OneMoney.",
+              "Enter a valid Zimbabwe mobile number (e.g. 0771234567) for EcoCash or InnBucks.",
           },
           { status: 400 }
         )
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
           {
             error:
               response?.error ||
-              "Could not start mobile money payment. Check that EcoCash/OneMoney is enabled on your Paynow integration.",
+              "Could not start payment. Check that EcoCash/InnBucks is enabled on your Paynow integration.",
           },
           { status: 502 }
         )
@@ -183,6 +183,8 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", order.id)
 
+      const innbucksEntry = response.isInnbucks ? response.innbucks_info?.[0] : undefined
+
       return NextResponse.json({
         success: true,
         mode: "express",
@@ -190,8 +192,18 @@ export async function POST(req: NextRequest) {
         pollUrl: response.pollUrl,
         instructions:
           response.instructions ||
-          `Approve the ${paymentMethod === "ecocash" ? "EcoCash" : "OneMoney"} prompt on your phone to complete payment.`,
+          (paymentMethod === "innbucks"
+            ? "Open the InnBucks app and pay using the authorization code below."
+            : "Approve the EcoCash prompt on your phone to complete payment."),
         paymentMethod,
+        innbucks: innbucksEntry
+          ? {
+              authorizationCode: innbucksEntry.authorizationcode,
+              deepLinkUrl: innbucksEntry.deep_link_url,
+              qrCodeUrl: innbucksEntry.qr_code,
+              expiresAt: innbucksEntry.expires_at,
+            }
+          : undefined,
       })
     }
 

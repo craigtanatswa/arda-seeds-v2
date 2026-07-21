@@ -9,7 +9,7 @@ export function isInsufficientBalanceError(message: string): boolean {
 }
 
 export function walletLabelForMethod(method: PaynowPaymentMethod | ""): string {
-  if (method === "onemoney") return "OneMoney"
+  if (method === "innbucks") return "InnBucks"
   if (method === "ecocash") return "EcoCash"
   return "mobile money"
 }
