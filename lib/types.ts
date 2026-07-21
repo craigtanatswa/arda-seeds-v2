@@ -32,9 +32,83 @@ export interface OrderRequest {
   lastName: string
   email: string
   phone: string
-  address: string
+  collectionPointId: string
   items: CartItem[]
-  total: number
+}
+
+export type CollectionPointType = "head_office" | "depot" | "retail_partner"
+export type OrderFulfillmentType = "collection" | "delivery"
+export type OrderStatus =
+  | "pending_payment"
+  | "paid"
+  | "processing"
+  | "awaiting_customer_collection"
+  | "awaiting_customer_delivery"
+  | "ready_for_collection"
+  | "out_for_delivery"
+  | "collected"
+  | "delivered"
+  | "cancelled"
+  | "payment_failed"
+
+export interface CollectionPoint {
+  id: string
+  name: string
+  city: string
+  address: string | null
+  type: CollectionPointType
+  is_active: boolean
+  sort_order: number
+  source_url?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Customer {
+  id: string
+  email: string
+  first_name: string
+  last_name: string
+  phone: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface SalesOrder {
+  id: string
+  order_ref: string
+  customer_id: string
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  fulfillment_type: OrderFulfillmentType
+  collection_point_id: string | null
+  collection_point_name: string | null
+  collection_city: string | null
+  collection_address: string | null
+  delivery_address: string | null
+  total_usd: number
+  status: OrderStatus
+  paynow_poll_url?: string | null
+  paynow_reference?: string | null
+  paynow_status?: string | null
+  paid_at?: string | null
+  confirmation_email_sent?: boolean
+  created_at?: string
+  updated_at?: string
+  order_items?: SalesOrderItem[]
+}
+
+export interface SalesOrderItem {
+  id?: string
+  order_id?: string
+  product_id: string
+  product_name: string
+  pack_size: string
+  unit_price: number
+  quantity: number
+  line_total: number
 }
 
 export interface QuoteRequest {

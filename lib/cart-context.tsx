@@ -1,7 +1,9 @@
 "use client"
 
-import React, { createContext, useContext, useState, useCallback } from "react"
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
 import type { CartItem } from "@/lib/types"
+
+const STORAGE_KEY = "arda-seeds-cart"
 
 interface CartContextValue {
   items: CartItem[]
@@ -11,12 +13,36 @@ interface CartContextValue {
   clearCart: () => void
   total: number
   itemCount: number
+  hydrated: boolean
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
 
+function loadCart(): CartItem[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as CartItem[]
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setItems(loadCart())
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  }, [items, hydrated])
 
   const addItem = useCallback((newItem: CartItem) => {
     setItems((prev) => {
@@ -46,6 +72,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeItem(productId, packSize)
         return
       }
+      if (!Number.isInteger(quantity)) return
       setItems((prev) =>
         prev.map((i) =>
           i.productId === productId && i.packSize === packSize ? { ...i, quantity } : i
@@ -62,7 +89,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount }}
+      value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, hydrated }}
     >
       {children}
     </CartContext.Provider>

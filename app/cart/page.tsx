@@ -1,50 +1,189 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Trash2, ShoppingBag, CheckCircle2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, Trash2, ShoppingBag, Smartphone, CreditCard, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useCart } from "@/lib/cart-context"
+import { groupCollectionPointsByCity } from "@/lib/collection-points"
+import {
+  formatInsufficientBalanceMessage,
+  isInsufficientBalanceError,
+} from "@/lib/payment-errors"
+import type { CollectionPoint } from "@/lib/types"
+import type { PaynowPaymentMethod } from "@/lib/paynow"
 
-type Step = "cart" | "details" | "confirmed"
+type Step = "cart" | "details" | "awaiting_payment"
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+const PAYMENT_OPTIONS: {
+  id: PaynowPaymentMethod
+  label: string
+  hint: string
+}[] = [
+  {
+    id: "ecocash",
+    label: "EcoCash",
+    hint: "Pay on your Econet phone — no Paynow login",
+  },
+  {
+    id: "onemoney",
+    label: "OneMoney",
+    hint: "Pay on your NetOne phone — no Paynow login",
+  },
+  {
+    id: "card",
+    label: "Card / Zimswitch",
+    hint: "Visa, Mastercard or Zimswitch via Paynow",
+  },
+]
+
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, clearCart, total } = useCart()
+  const router = useRouter()
+  const { items, removeItem, updateQuantity, clearCart, total, hydrated } = useCart()
   const [step, setStep] = useState<Step>("cart")
 
-  // Customer details form state
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
-  const [address, setAddress] = useState("")
+  const [city, setCity] = useState("")
+  const [collectionPointId, setCollectionPointId] = useState("")
+  const [paymentMethod, setPaymentMethod] = useState<PaynowPaymentMethod | "">("")
+  const [points, setPoints] = useState<CollectionPoint[]>([])
+  const [pointsLoading, setPointsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
+  const [insufficientBalanceOpen, setInsufficientBalanceOpen] = useState(false)
+  const [insufficientBalanceMessage, setInsufficientBalanceMessage] = useState("")
+  const [orderRef, setOrderRef] = useState("")
+  const [paymentInstructions, setPaymentInstructions] = useState("")
+  const [awaitingMethod, setAwaitingMethod] = useState<PaynowPaymentMethod | "">("")
+  const [awaitingTotal, setAwaitingTotal] = useState(0)
+
+  function showInsufficientBalanceModal(
+    method: PaynowPaymentMethod | "",
+    amount: number,
+    serverMessage?: string
+  ) {
+    setInsufficientBalanceMessage(
+      serverMessage && isInsufficientBalanceError(serverMessage)
+        ? serverMessage
+        : formatInsufficientBalanceMessage(method, amount)
+    )
+    setInsufficientBalanceOpen(true)
+  }
+
+  useEffect(() => {
+    if (step !== "details") return
+    setPointsLoading(true)
+    fetch("/api/collection-points")
+      .then((res) => res.json())
+      .then((data) => {
+        setPoints((data.points ?? []) as CollectionPoint[])
+      })
+      .catch(() => setPoints([]))
+      .finally(() => setPointsLoading(false))
+  }, [step])
+
+  useEffect(() => {
+    if (step !== "awaiting_payment" || !orderRef) return
+    let cancelled = false
+    let attempts = 0
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/order/${encodeURIComponent(orderRef)}`)
+        const data = await res.json()
+        if (cancelled) return
+        const status = data.order?.status as string | undefined
+        if (data.insufficientBalance) {
+          showInsufficientBalanceModal(
+            awaitingMethod,
+            Number(data.order?.total_usd ?? awaitingTotal),
+            data.paymentFailureReason as string | undefined
+          )
+          setStep("details")
+          setSubmitting(false)
+          return
+        }
+        if (status === "payment_failed") {
+          const reason = (data.paymentFailureReason as string | undefined) || "Payment could not be completed."
+          if (isInsufficientBalanceError(reason)) {
+            showInsufficientBalanceModal(
+              awaitingMethod,
+              Number(data.order?.total_usd ?? awaitingTotal),
+              reason
+            )
+          } else {
+            setSubmitError(reason)
+          }
+          setStep("details")
+          setSubmitting(false)
+          return
+        }
+        if (
+          status === "paid" ||
+          status === "processing" ||
+          status === "ready_for_collection"
+        ) {
+          router.replace(`/order/confirmation?ref=${encodeURIComponent(orderRef)}`)
+          return
+        }
+      } catch {
+        // keep polling
+      }
+      attempts += 1
+      if (!cancelled && attempts < 60) {
+        setTimeout(poll, 3000)
+      }
+    }
+
+    const timer = setTimeout(poll, 2500)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [step, orderRef, router, awaitingMethod, awaitingTotal])
+
+  const cityGroups = useMemo(() => groupCollectionPointsByCity(points), [points])
+  const cityPoints = useMemo(
+    () => cityGroups.find((g) => g.city === city)?.points ?? [],
+    [cityGroups, city]
+  )
 
   function validateDetails() {
     const e: Record<string, string> = {}
     if (!firstName.trim()) e.firstName = "First name is required."
     if (!lastName.trim()) e.lastName = "Last name is required."
-    if (!email.trim()) {
-      e.email = "Email is required."
-    } else if (!EMAIL_REGEX.test(email)) {
-      e.email = "Please enter a valid email address."
-    }
+    if (!email.trim()) e.email = "Email is required."
+    else if (!EMAIL_REGEX.test(email)) e.email = "Please enter a valid email address."
     if (!phone.trim()) e.phone = "Phone number is required."
-    if (!address.trim()) e.address = "Address is required."
+    if (!city) e.city = "Please select a city."
+    if (!collectionPointId) e.collectionPointId = "Please select a collection point."
+    if (!paymentMethod) e.paymentMethod = "Please choose a payment method."
     setErrors(e)
     return Object.keys(e).length === 0
   }
 
-  async function handleConfirmOrder() {
-    if (!validateDetails()) return
+  async function handlePayAndOrder() {
+    if (!validateDetails() || !paymentMethod) return
     setSubmitting(true)
     setSubmitError("")
+    setInsufficientBalanceOpen(false)
     try {
       const res = await fetch("/api/order", {
         method: "POST",
@@ -54,47 +193,118 @@ export default function CartPage() {
           lastName,
           email,
           phone,
-          address,
-          items,
-          total,
+          collectionPointId,
+          paymentMethod,
+          items: items.map((item) => ({
+            productId: item.productId,
+            packSize: item.packSize,
+            quantity: item.quantity,
+          })),
         }),
       })
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || "Order failed.")
-      }
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Order failed.")
+
       clearCart()
-      setStep("confirmed")
-    } catch (err: any) {
-      setSubmitError(err.message || "Something went wrong. Please try again.")
-    } finally {
+
+      if (data.mode === "express") {
+        setOrderRef(data.orderRef as string)
+        setAwaitingTotal(total)
+        setPaymentInstructions(
+          (data.instructions as string) ||
+            "Approve the payment prompt on your phone to complete the order."
+        )
+        setAwaitingMethod(paymentMethod)
+        setStep("awaiting_payment")
+        setSubmitting(false)
+        return
+      }
+
+      if (!data.browserUrl) throw new Error("Payment redirect unavailable.")
+      window.location.href = data.browserUrl as string
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      if (isInsufficientBalanceError(message)) {
+        showInsufficientBalanceModal(paymentMethod, total, message)
+      } else {
+        setSubmitError(message)
+      }
       setSubmitting(false)
     }
   }
 
-  // ── CONFIRMED ──────────────────────────────────────────────────────────────
-  if (step === "confirmed") {
-    return (
-      <div className="container mx-auto px-4 py-16 max-w-lg text-center">
-        <div className="bg-white rounded-2xl border border-gray-200 p-10">
-          <div className="flex justify-center mb-6">
-            <CheckCircle2 className="h-16 w-16 text-green-600" />
+  const insufficientBalanceDialog = (
+    <AlertDialog open={insufficientBalanceOpen} onOpenChange={setInsufficientBalanceOpen}>
+      <AlertDialogContent className="rounded-xl border border-amber-200 bg-white p-0 gap-0 max-w-md overflow-hidden">
+        <AlertDialogHeader className="px-6 pt-6 pb-4 space-y-3">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+              <Wallet className="h-6 w-6" />
+            </div>
+            <div className="space-y-2 text-left">
+              <AlertDialogTitle className="text-xl font-bold text-gray-900">
+                Insufficient balance
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm text-gray-600 leading-relaxed">
+                {insufficientBalanceMessage ||
+                  formatInsufficientBalanceMessage(paymentMethod, total)}
+              </AlertDialogDescription>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold mb-3">Order Received!</h1>
-          <p className="text-gray-600 mb-6 leading-relaxed">
-            Thank you for your order, <strong>{firstName}</strong>. A confirmation has been
-            sent to <strong>{email}</strong>. Our sales team will be in touch within 24
-            hours to finalise your order.
-          </p>
-          <Button asChild className="bg-green-700 hover:bg-green-800 w-full">
-            <Link href="/products">Continue Shopping</Link>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="px-6 py-4 bg-amber-50/60 border-t border-amber-100">
+          <Button
+            type="button"
+            className="w-full rounded-lg bg-green-700 hover:bg-green-800 text-white font-semibold"
+            onClick={() => setInsufficientBalanceOpen(false)}
+          >
+            Try again
           </Button>
-        </div>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+
+  if (!hydrated) {
+    return (
+      <div className="container mx-auto px-4 py-16 max-w-lg text-center text-gray-500">
+        Loading cart…
       </div>
     )
   }
 
-  // ── EMPTY CART ──────────────────────────────────────────────────────────────
+  if (step === "awaiting_payment") {
+    return (
+      <>
+        {insufficientBalanceDialog}
+        <div className="container mx-auto px-4 py-16 max-w-lg text-center">
+        <div className="bg-white rounded-2xl border border-gray-200 p-10">
+          <Smartphone className="h-14 w-14 text-green-700 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-3">Complete payment on your phone</h1>
+          <p className="text-gray-600 mb-2">
+            {awaitingMethod === "ecocash" ? "EcoCash" : "OneMoney"} prompt sent for order{" "}
+            <strong>{orderRef}</strong>.
+          </p>
+          <p className="text-gray-700 mb-6 leading-relaxed">{paymentInstructions}</p>
+          <p className="text-sm text-gray-500 mb-6">
+            This page updates automatically when payment is confirmed.
+          </p>
+          <Button
+            asChild
+            variant="outline"
+            className="w-full border-green-700 text-green-700"
+          >
+            <Link href={`/order/confirmation?ref=${encodeURIComponent(orderRef)}`}>
+              Check payment status
+            </Link>
+          </Button>
+        </div>
+        </div>
+      </>
+    )
+  }
+
   if (items.length === 0 && step === "cart") {
     return (
       <div className="container mx-auto px-4 py-16 max-w-lg text-center">
@@ -108,10 +318,11 @@ export default function CartPage() {
     )
   }
 
-  // ── CUSTOMER DETAILS ────────────────────────────────────────────────────────
   if (step === "details") {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <>
+        {insufficientBalanceDialog}
+        <div className="container mx-auto px-4 py-8 max-w-2xl">
         <button
           onClick={() => setStep("cart")}
           className="inline-flex items-center text-green-700 hover:text-green-800 mb-6"
@@ -120,7 +331,11 @@ export default function CartPage() {
         </button>
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
-          <h1 className="text-2xl font-bold mb-6">Your Details</h1>
+          <h1 className="text-2xl font-bold mb-2">Checkout</h1>
+          <p className="text-sm text-gray-500 mb-6">
+            Choose your collection point and payment method. EcoCash and OneMoney stay on this site
+            — no Paynow login page.
+          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
@@ -131,9 +346,7 @@ export default function CartPage() {
                 onChange={(e) => setFirstName(e.target.value)}
                 className={`mt-1 ${errors.firstName ? "border-red-500" : ""}`}
               />
-              {errors.firstName && (
-                <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
-              )}
+              {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
             </div>
             <div>
               <Label htmlFor="lastName">Last Name *</Label>
@@ -143,9 +356,7 @@ export default function CartPage() {
                 onChange={(e) => setLastName(e.target.value)}
                 className={`mt-1 ${errors.lastName ? "border-red-500" : ""}`}
               />
-              {errors.lastName && (
-                <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
-              )}
+              {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
             </div>
           </div>
 
@@ -158,39 +369,120 @@ export default function CartPage() {
               onChange={(e) => setEmail(e.target.value)}
               className={`mt-1 ${errors.email ? "border-red-500" : ""}`}
             />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
           <div className="mb-4">
-            <Label htmlFor="phone">Phone Number *</Label>
+            <Label htmlFor="phone">Mobile number (for EcoCash / OneMoney) *</Label>
             <Input
               id="phone"
               type="tel"
+              placeholder={
+                process.env.NEXT_PUBLIC_PAYNOW_TEST_MODE === "true"
+                  ? "0771111111 (Paynow test number)"
+                  : "0771234567"
+              }
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className={`mt-1 ${errors.phone ? "border-red-500" : ""}`}
             />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+            {process.env.NEXT_PUBLIC_PAYNOW_TEST_MODE === "true" && (
+              <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                Paynow is in <strong>test mode</strong>. Use simulator numbers only:{" "}
+                <code>0771111111</code> (success), <code>0772222222</code> (delayed),{" "}
+                <code>0773333333</code> (cancelled), <code>0774444444</code> (insufficient
+                balance). Real phone numbers will be rejected.
+              </p>
+            )}
+            {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+          </div>
+
+          <div className="mb-4">
+            <Label htmlFor="city">Collection city *</Label>
+            <select
+              id="city"
+              value={city}
+              disabled={pointsLoading}
+              onChange={(e) => {
+                setCity(e.target.value)
+                setCollectionPointId("")
+              }}
+              className={`mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm ${
+                errors.city ? "border-red-500" : ""
+              }`}
+            >
+              <option value="">{pointsLoading ? "Loading cities…" : "Select a city"}</option>
+              {cityGroups.map((group) => (
+                <option key={group.city} value={group.city}>
+                  {group.city}
+                </option>
+              ))}
+            </select>
+            {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+          </div>
+
+          <div className="mb-6">
+            <Label htmlFor="collectionPoint">Collection point *</Label>
+            <select
+              id="collectionPoint"
+              value={collectionPointId}
+              disabled={!city || cityPoints.length === 0}
+              onChange={(e) => setCollectionPointId(e.target.value)}
+              className={`mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm ${
+                errors.collectionPointId ? "border-red-500" : ""
+              }`}
+            >
+              <option value="">
+                {!city ? "Select a city first" : "Select a collection point"}
+              </option>
+              {cityPoints.map((point) => (
+                <option key={point.id} value={point.id}>
+                  {point.name}
+                  {point.address ? ` — ${point.address}` : ""}
+                </option>
+              ))}
+            </select>
+            {errors.collectionPointId && (
+              <p className="text-red-500 text-xs mt-1">{errors.collectionPointId}</p>
             )}
           </div>
 
           <div className="mb-6">
-            <Label htmlFor="address">Address *</Label>
-            <Input
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className={`mt-1 ${errors.address ? "border-red-500" : ""}`}
-            />
-            {errors.address && (
-              <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+            <Label className="mb-2 block">Payment method *</Label>
+            <div className="grid gap-3">
+              {PAYMENT_OPTIONS.map((option) => {
+                const selected = paymentMethod === option.id
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setPaymentMethod(option.id)}
+                    className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+                      selected
+                        ? "border-green-700 bg-green-50 ring-1 ring-green-700"
+                        : "border-gray-200 hover:border-green-300"
+                    }`}
+                  >
+                    <span className="mt-0.5 text-green-700">
+                      {option.id === "card" ? (
+                        <CreditCard className="h-5 w-5" />
+                      ) : (
+                        <Smartphone className="h-5 w-5" />
+                      )}
+                    </span>
+                    <span>
+                      <span className="block font-semibold text-gray-900">{option.label}</span>
+                      <span className="block text-sm text-gray-500">{option.hint}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            {errors.paymentMethod && (
+              <p className="text-red-500 text-xs mt-2">{errors.paymentMethod}</p>
             )}
           </div>
 
-          {/* Order summary recap */}
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm font-semibold text-gray-700 mb-2">Order Summary</p>
             {items.map((item) => (
@@ -199,7 +491,7 @@ export default function CartPage() {
                 className="flex justify-between text-sm text-gray-600 mb-1"
               >
                 <span>
-                  {item.productName} ({item.packSize}) x {item.quantity}
+                  {item.productName} ({item.packSize}) × {item.quantity}
                 </span>
                 <span>US$ {(item.pricePerUnit * item.quantity).toFixed(2)}</span>
               </div>
@@ -210,23 +502,31 @@ export default function CartPage() {
             </div>
           </div>
 
-          {submitError && (
-            <p className="text-red-500 text-sm mb-4">{submitError}</p>
-          )}
+          {submitError && <p className="text-red-500 text-sm mb-4">{submitError}</p>}
 
           <Button
-            onClick={handleConfirmOrder}
-            disabled={submitting}
+            onClick={handlePayAndOrder}
+            disabled={submitting || pointsLoading}
             className="w-full h-12 text-base bg-green-700 hover:bg-green-800 font-semibold"
           >
-            {submitting ? "Placing Order..." : "Confirm Order"}
+            {submitting
+              ? paymentMethod === "card"
+                ? "Opening Paynow…"
+                : "Sending payment request…"
+              : paymentMethod === "ecocash"
+                ? "Pay with EcoCash"
+                : paymentMethod === "onemoney"
+                  ? "Pay with OneMoney"
+                  : paymentMethod === "card"
+                    ? "Pay with Card / Zimswitch"
+                    : "Pay now"}
           </Button>
         </div>
-      </div>
+        </div>
+      </>
     )
   }
 
-  // ── CART ────────────────────────────────────────────────────────────────────
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <Link
@@ -240,20 +540,14 @@ export default function CartPage() {
 
       <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 mb-6">
         {items.map((item) => (
-          <div
-            key={`${item.productId}-${item.packSize}`}
-            className="flex items-center gap-4 p-4"
-          >
+          <div key={`${item.productId}-${item.packSize}`} className="flex items-center gap-4 p-4">
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-800 truncate">
-                {item.productName}
-              </p>
+              <p className="font-semibold text-gray-800 truncate">{item.productName}</p>
               <p className="text-sm text-gray-500 capitalize">
                 {item.category} · {item.packSize} @ US$ {item.pricePerUnit.toFixed(2)}
               </p>
             </div>
 
-            {/* Quantity stepper */}
             <div className="flex items-center gap-2">
               <button
                 onClick={() =>
@@ -289,18 +583,14 @@ export default function CartPage() {
         ))}
       </div>
 
-      {/* Total */}
       <div className="bg-gray-50 rounded-xl p-4 mb-6 flex justify-between items-center">
         <span className="text-lg font-semibold text-gray-700">Total</span>
-        <span className="text-2xl font-bold text-gray-900">
-          US$ {total.toFixed(2)}
-        </span>
+        <span className="text-2xl font-bold text-gray-900">US$ {total.toFixed(2)}</span>
       </div>
 
-      {/* Footer note */}
       <p className="text-xs text-gray-400 mb-6">
-        * Prices are retail prices in USD per unit as per the official ARDA Seeds price
-        list effective 01 August 2025. Final pricing will be confirmed by the sales team.
+        Orders are sold in catalogue pack sizes only. At checkout you choose EcoCash, OneMoney, or
+        card.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -317,7 +607,7 @@ export default function CartPage() {
           onClick={() => setStep("details")}
           className="flex-1 bg-green-700 hover:bg-green-800 font-semibold"
         >
-          Place Order
+          Checkout
         </Button>
       </div>
     </div>

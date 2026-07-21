@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
-import { Briefcase, FileText, LogOut, LayoutDashboard, Shield } from "lucide-react"
+import { Briefcase, FileText, LogOut, LayoutDashboard, Shield, ShoppingCart } from "lucide-react"
 
 interface AdminModule {
   id: string
@@ -27,6 +27,13 @@ const ADMIN_MODULES: AdminModule[] = [
     description: "Tenders and supplier applications",
     href: "/admin/procurement",
     icon: <FileText className="h-8 w-8" />,
+  },
+  {
+    id: "sales",
+    name: "Sales System",
+    description: "Orders, customers, and collection points",
+    href: "/admin/sales",
+    icon: <ShoppingCart className="h-8 w-8" />,
   },
 ]
 
@@ -76,7 +83,7 @@ export default function MasterAdminDashboardPage() {
           >
             <Shield className="h-5 w-5 text-green-700" />
             <span className="font-medium">Manage Admins</span>
-            <span className="text-sm text-gray-500">— Add or remove HR / Procurement admins</span>
+            <span className="text-sm text-gray-500">— Add or remove HR / Procurement / Sales admins</span>
           </Link>
         </div>
 

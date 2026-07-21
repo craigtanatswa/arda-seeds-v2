@@ -25,8 +25,13 @@ export const ADMIN_SYSTEMS: AdminSystem[] = [
     path: "/admin/procurement",
     description: "Tenders and supplier applications",
   },
-  // Add future systems here, e.g.:
-  // { key: "finance", label: "Finance System", role: "admin_finance", path: "/admin/finance", description: "..." },
+  {
+    key: "sales",
+    label: "Sales System",
+    role: "admin_sales",
+    path: "/admin/sales",
+    description: "Orders, customers, and collection points",
+  },
 ]
 
 /** Role that has access to all systems (super admin). */

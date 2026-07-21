@@ -39,16 +39,17 @@ function AdminLoginContent() {
         .eq("id", data.user.id)
         .single()
       const role = profile?.role as string | undefined
-      const allowedRoles = ["admin", "admin_hr", "admin_prcmt"]
+      const allowedRoles = ["admin", "admin_hr", "admin_prcmt", "admin_sales"]
       if (!role || !allowedRoles.includes(role)) {
         await supabase.auth.signOut()
         throw new Error(
-          "Access denied. Your account does not have admin access. An administrator must set your profile role (admin, admin_hr, or admin_prcmt) in the database."
+          "Access denied. Your account does not have admin access. An administrator must set your profile role (admin, admin_hr, admin_prcmt, or admin_sales) in the database."
         )
       }
       if (role === "admin") router.replace("/admin")
       else if (role === "admin_hr") router.replace("/admin/hr")
       else if (role === "admin_prcmt") router.replace("/admin/procurement")
+      else if (role === "admin_sales") router.replace("/admin/sales")
       else router.replace("/admin")
       router.refresh()
     } catch (err: unknown) {

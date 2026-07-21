@@ -51,6 +51,7 @@
     "next": "^15.5.7",
     "next-themes": "^0.4.4",
     "nodemailer": "^8.0.1",
+    "paynow": "^2.2.2",
     "react": "^19",
     "react-day-picker": "^8.10.1",
     "react-dom": "^19",
