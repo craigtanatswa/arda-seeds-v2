@@ -13,6 +13,9 @@ import type { HomepagePromoBannerItem, HomepagePromoBannerSettings } from "@/lib
 import { services } from "@/lib/service-data";
 import "./home-styles.css";
 
+/** Always fetch latest promo banner (and hero slides) from Supabase on production. */
+export const revalidate = 0;
+
 const serviceIcons: Record<string, typeof Sprout> = {
   outgrowing: Sprout,
   "agronomic-support": GraduationCap,

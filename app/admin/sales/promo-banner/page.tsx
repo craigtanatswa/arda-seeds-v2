@@ -12,6 +12,7 @@ import { useAdminRole } from "@/lib/hooks/use-admin-role"
 import { PromoBannerPreview } from "@/components/admin/promo-banner-preview"
 import { useNotification } from "@/components/notification-provider"
 import type { HomepagePromoBannerItem, HomepagePromoBannerSettings } from "@/lib/types"
+import { revalidateHomepage } from "@/lib/revalidate-homepage"
 import { ArrowDown, ArrowUp, LogOut, Megaphone, Plus } from "lucide-react"
 
 export default function PromoBannerAdminPage() {
@@ -48,6 +49,11 @@ export default function PromoBannerAdminPage() {
     load()
   }, [])
 
+  const refreshAfterChange = async () => {
+    await load()
+    await revalidateHomepage()
+  }
+
   const toggleBanner = async (enabled: boolean) => {
     if (!supabase) return
     setBusy(true)
@@ -56,7 +62,10 @@ export default function PromoBannerAdminPage() {
       .upsert({ id: true, is_enabled: enabled, updated_at: new Date().toISOString() })
     setBusy(false)
     if (error) await alert(error.message, "Error")
-    else setSettings((prev) => ({ id: true, is_enabled: enabled, updated_at: prev?.updated_at }))
+    else {
+      setSettings((prev) => ({ id: true, is_enabled: enabled, updated_at: prev?.updated_at }))
+      await revalidateHomepage()
+    }
   }
 
   const resetForm = () => {
@@ -80,7 +89,7 @@ export default function PromoBannerAdminPage() {
       if (error) await alert(error.message, "Error")
       else {
         resetForm()
-        await load()
+        await refreshAfterChange()
       }
       return
     }
@@ -96,7 +105,7 @@ export default function PromoBannerAdminPage() {
     if (error) await alert(error.message, "Error")
     else {
       resetForm()
-      await load()
+      await refreshAfterChange()
     }
   }
 
@@ -115,7 +124,7 @@ export default function PromoBannerAdminPage() {
       .eq("id", item.id)
     setBusy(false)
     if (error) await alert(error.message, "Error")
-    else await load()
+    else await refreshAfterChange()
   }
 
   const handleDelete = async (item: HomepagePromoBannerItem) => {
@@ -128,7 +137,7 @@ export default function PromoBannerAdminPage() {
     if (!ok) return
     const { error } = await supabase.from("homepage_promo_banner_items").delete().eq("id", item.id)
     if (error) await alert(error.message, "Error")
-    else await load()
+    else await refreshAfterChange()
   }
 
   const moveItem = async (item: HomepagePromoBannerItem, direction: "up" | "down") => {
@@ -146,7 +155,7 @@ export default function PromoBannerAdminPage() {
     ])
     setBusy(false)
     if (error) await alert(error.message, "Error")
-    else await load()
+    else await refreshAfterChange()
   }
 
   const handleSignOut = async () => {
