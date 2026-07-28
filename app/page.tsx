@@ -6,7 +6,10 @@ import TestimonialCard from "@/components/testimonial-card";
 import { ArrowRight, Leaf, Sprout, FlaskRoundIcon as Flask, Package, Check, TrendingUp, Shield, GraduationCap, Tractor, Factory, Truck } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import HeroSlideshow from "@/components/hero-slideshow";
+import HomepagePromoBanner from "@/components/homepage-promo-banner";
 import ScrollFlyIn from "@/components/scroll-fly-in";
+import { shouldShowPromoBanner } from "@/lib/promo-banner";
+import type { HomepagePromoBannerItem, HomepagePromoBannerSettings } from "@/lib/types";
 import { services } from "@/lib/service-data";
 import "./home-styles.css";
 
@@ -65,12 +68,37 @@ export default async function Home() {
     ...baseSlides.filter((slide) => slide.id !== climateSmartSlide.id),
   ];
 
+  let promoBannerSettings: HomepagePromoBannerSettings | null = null;
+  let promoBannerItems: HomepagePromoBannerItem[] = [];
+
+  if (supabase) {
+    const [settingsRes, itemsRes] = await Promise.all([
+      supabase.from("homepage_promo_banner_settings").select("*").eq("id", true).maybeSingle(),
+      supabase
+        .from("homepage_promo_banner_items")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true }),
+    ]);
+    if (!settingsRes.error) {
+      promoBannerSettings = settingsRes.data as HomepagePromoBannerSettings | null;
+    }
+    if (!itemsRes.error) {
+      promoBannerItems = (itemsRes.data as HomepagePromoBannerItem[]) ?? [];
+    }
+  }
+
+  const showPromoBanner = shouldShowPromoBanner(promoBannerSettings, promoBannerItems);
+
   return (
     <div className="flex flex-col overflow-hidden home-page">
       {/* Styles moved to home-styles.css */}
 
       {/* HERO SECTION – SLIDESHOW */}
       <HeroSlideshow slides={heroSlides} />
+
+      {showPromoBanner && <HomepagePromoBanner items={promoBannerItems} />}
 
       {/* Why Choose ARDA - New Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-green-50 via-white to-emerald-50 relative overflow-hidden">

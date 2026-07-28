@@ -227,6 +227,21 @@ export interface Tender {
   updated_at?: string
 }
 
+export interface HomepagePromoBannerSettings {
+  id: boolean
+  is_enabled: boolean
+  updated_at?: string
+}
+
+export interface HomepagePromoBannerItem {
+  id: string
+  text: string
+  is_active: boolean
+  sort_order: number
+  created_at?: string
+  updated_at?: string
+}
+
 export interface TenderApplication {
   id: string
   tender_id: string

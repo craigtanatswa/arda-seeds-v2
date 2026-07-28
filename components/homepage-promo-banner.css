@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap");
+
+.homepage-promo-banner {
+  font-family: "Source Sans 3", sans-serif;
+}
+
+.homepage-promo-separator {
+  display: inline-block;
+  padding-inline: 9.375em;
+}
+
+@keyframes promoMarqueeLtr {
+  0% {
+    transform: translateX(calc(-1 * var(--marquee-shift, 0px)));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.homepage-promo-banner-track {
+  animation: promoMarqueeLtr var(--marquee-duration, 120s) linear infinite;
+}
+
+.homepage-promo-banner-track:not(.is-ready) {
+  animation: none;
+}
+
+.homepage-promo-banner:hover .homepage-promo-banner-track {
+  animation-play-state: paused;
+}
+
+.homepage-promo-banner--paused .homepage-promo-banner-track {
+  animation-play-state: paused;
+}

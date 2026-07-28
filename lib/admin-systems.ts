@@ -30,7 +30,7 @@ export const ADMIN_SYSTEMS: AdminSystem[] = [
     label: "Sales System",
     role: "admin_sales",
     path: "/admin/sales",
-    description: "Orders, customers, and collection points",
+    description: "Orders, customers, collection points, and homepage promo banner",
   },
 ]
 

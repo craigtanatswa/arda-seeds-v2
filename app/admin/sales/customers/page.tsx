@@ -60,6 +60,9 @@ export default function SalesCustomersPage() {
             <Link href="/admin/sales/collection-points" className="text-gray-600 text-sm">
               Collection points
             </Link>
+            <Link href="/admin/sales/promo-banner" className="text-gray-600 text-sm">
+              Promo banner
+            </Link>
           </div>
           <Button variant="outline" size="sm" onClick={handleSignOut}>
             <LogOut className="h-4 w-4" /> Sign out

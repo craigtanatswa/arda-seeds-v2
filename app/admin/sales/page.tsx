@@ -103,6 +103,9 @@ export default function SalesDashboardPage() {
             >
               Collection points
             </Link>
+            <Link href="/admin/sales/promo-banner" className="text-gray-600 hover:text-gray-900 text-sm">
+              Promo banner
+            </Link>
           </div>
           <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
             <LogOut className="h-4 w-4" /> Sign out
