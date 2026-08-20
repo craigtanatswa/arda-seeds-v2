@@ -125,13 +125,13 @@ function ConfirmationContent() {
         )}
         {paid ? (
           <p className="text-sm text-gray-500 mb-6">
-            A confirmation email has been sent. Our sales team will notify you when your order is
-            ready for collection.
+            Payment confirmed. A receipt email has been sent. Our sales team will notify you when
+            your order is ready for collection.
           </p>
         ) : (
           <p className="text-sm text-gray-500 mb-6">
-            If you completed payment on Paynow, this page may take a moment to update. You can also
-            check your email for confirmation.
+            No receipt is issued until Paynow confirms payment. If you just paid, this page may take
+            a moment to update — refresh shortly or keep this tab open.
           </p>
         )}
         <Button asChild className="bg-green-700 hover:bg-green-800 w-full">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabaseServer"
-import { createPaynowVerifier } from "@/lib/paynow"
+import { createPaynowVerifier, isPaynowPaymentSettled } from "@/lib/paynow"
 import { sendPaidOrderEmails } from "@/lib/order-emails"
 import type { ValidatedOrderLine } from "@/lib/order-validation"
 
@@ -11,12 +11,6 @@ function parsePaynowBody(raw: string): Record<string, string> {
     values[key] = value
   })
   return values
-}
-
-function isPaidStatus(status: string | undefined) {
-  if (!status) return false
-  const s = status.toLowerCase()
-  return s === "paid" || s === "awaiting delivery" || s === "delivered"
 }
 
 export async function POST(req: NextRequest) {
@@ -54,7 +48,10 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Order not found", { status: 404 })
     }
 
-    const paid = isPaidStatus(status)
+    // Receipt emails only after Paynow reports a settled payment (hash already verified above).
+    const paid = isPaynowPaymentSettled(status)
+    const wasAwaitingPayment =
+      order.status === "pending_payment" || order.status === "payment_failed"
 
     await supabaseServer
       .from("orders")
@@ -63,7 +60,7 @@ export async function POST(req: NextRequest) {
         paynow_reference: paynowReference ?? order.paynow_reference,
         paynow_poll_url: pollUrl ?? order.paynow_poll_url,
         status: paid
-          ? order.status === "pending_payment" || order.status === "payment_failed"
+          ? wasAwaitingPayment
             ? "paid"
             : order.status
           : status?.toLowerCase() === "cancelled"
@@ -74,6 +71,7 @@ export async function POST(req: NextRequest) {
       })
       .eq("id", order.id)
 
+    // Customer/sales receipt only when Paynow confirms settlement — never on pending/created.
     if (paid && !order.confirmation_email_sent) {
       const lines: ValidatedOrderLine[] = (order.order_items ?? []).map(
         (item: {

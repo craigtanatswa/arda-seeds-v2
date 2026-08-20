@@ -2,6 +2,17 @@ import { Paynow } from "paynow"
 
 export type PaynowPaymentMethod = "ecocash" | "innbucks" | "card"
 
+/**
+ * Paynow statuses that mean the customer has paid and funds are with the merchant
+ * (or Paynow has completed settlement for the transaction).
+ * Do not treat Created / Sent / Pending / Cancelled as paid.
+ */
+export function isPaynowPaymentSettled(status: string | undefined | null): boolean {
+  if (!status) return false
+  const s = status.trim().toLowerCase()
+  return s === "paid" || s === "awaiting delivery" || s === "delivered"
+}
+
 export type InnBucksPaymentInfo = {
   authorizationCode: string
   deepLinkUrl: string

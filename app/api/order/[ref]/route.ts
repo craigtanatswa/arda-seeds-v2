@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabaseServer"
-import { createPaynowVerifier } from "@/lib/paynow"
+import { createPaynowVerifier, isPaynowPaymentSettled } from "@/lib/paynow"
 import { sendPaidOrderEmails } from "@/lib/order-emails"
 import { isInsufficientBalanceError } from "@/lib/payment-errors"
 import type { ValidatedOrderLine } from "@/lib/order-validation"
-
-function isPaidStatus(status: string | undefined) {
-  if (!status) return false
-  const s = status.toLowerCase()
-  return s === "paid" || s === "awaiting delivery" || s === "delivered"
-}
 
 function isFailedPaymentStatus(status: string | undefined, error?: string) {
   const s = (status ?? "").toLowerCase()
@@ -64,7 +58,8 @@ export async function GET(
 
           order.status = "payment_failed"
           order.paynow_status = status.status
-        } else if (status?.status && isPaidStatus(status.status)) {
+        } else if (status?.status && isPaynowPaymentSettled(status.status)) {
+          // Mark paid only after Paynow poll reports settled funds — then send receipt once.
           await supabaseServer
             .from("orders")
             .update({

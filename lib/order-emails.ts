@@ -83,16 +83,16 @@ export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
   await transporter.sendMail({
     from: senderFrom(),
     to: input.email,
-    subject: `Payment received — ARDA Seeds order ${input.orderRef}`,
+    subject: `Payment receipt — ARDA Seeds order ${input.orderRef}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #15803d; padding: 32px; border-radius: 12px 12px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 22px;">Thank you, ${input.firstName}!</h1>
-          <p style="color: #bbf7d0; margin: 8px 0 0; font-size: 14px;">Reference: ${input.orderRef}</p>
+          <h1 style="color: white; margin: 0; font-size: 22px;">Payment receipt</h1>
+          <p style="color: #bbf7d0; margin: 8px 0 0; font-size: 14px;">Thank you, ${input.firstName} · ${input.orderRef}</p>
         </div>
         <div style="background: #f9fafb; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
           <p style="color: #374151; line-height: 1.6;">
-            We have received your payment for your seed order. Our sales team will prepare your order for collection at:
+            Your payment has been confirmed. This email is your receipt. Our sales team will prepare your order for collection at:
           </p>
           <p style="color: #111827; font-weight: bold; margin: 16px 0;">${collectionLabel}</p>
           <p style="color: #374151; line-height: 1.6;">
