@@ -19,22 +19,23 @@ const maizePackSizes = [
 ]
 
 export const maizeProducts: Product[] = [
-  {
-    id: "payment-test-maize",
-    name: "Payment Test Maize",
-    category: "maize",
-    shortDescription:
-      "Temporary US$1 test product for verifying live Paynow payments. Remove after go-live testing.",
-    fullDescription:
-      "This is a temporary catalogue entry used only to place a US$1 live payment through Paynow. It is not a real seed variety for sale. Remove this product from the catalogue after payment testing is complete.",
-    maturity: "N/A — payment test only",
-    yieldPotential: "N/A",
-    features: ["US$1 live payment test", "Not for commercial sale", "Remove after testing"],
-    regions: ["Test only"],
-    image: maizeProductImage,
-    featured: false,
-    packSizes: [{ size: "Test pack", price: 1 }],
-  },
+  // Hidden from catalogue and checkout — uncomment to re-enable US$1 live payment testing.
+  // {
+  //   id: "payment-test-maize",
+  //   name: "Payment Test Maize",
+  //   category: "maize",
+  //   shortDescription:
+  //     "Temporary US$1 test product for verifying live Paynow payments. Remove after go-live testing.",
+  //   fullDescription:
+  //     "This is a temporary catalogue entry used only to place a US$1 live payment through Paynow. It is not a real seed variety for sale. Remove this product from the catalogue after payment testing is complete.",
+  //   maturity: "N/A — payment test only",
+  //   yieldPotential: "N/A",
+  //   features: ["US$1 live payment test", "Not for commercial sale", "Remove after testing"],
+  //   regions: ["Test only"],
+  //   image: maizeProductImage,
+  //   featured: false,
+  //   packSizes: [{ size: "Test pack", price: 1 }],
+  // },
   {
     id: "zs263",
     name: "ZS263",
