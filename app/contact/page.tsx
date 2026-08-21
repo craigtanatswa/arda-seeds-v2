@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import ContactForm from "@/components/contact-form"
 import { MapPin, Phone, Mail, Clock, Building2, Users } from "lucide-react"
+import { COMPANY_ADDRESS, COMPANY_ADDRESS_FULL } from "@/lib/site"
 import "./contact-styles.css"
 
 export const metadata: Metadata = {
@@ -63,8 +64,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-lg mb-1">Address</p>
-                    <p className="text-gray-600 leading-relaxed">3 Mchlery</p>
-                    <p className="text-gray-600 leading-relaxed">Eastlea, Harare</p>
+                    <p className="text-gray-600 leading-relaxed">{COMPANY_ADDRESS}</p>
                     <p className="text-gray-600 leading-relaxed">Zimbabwe</p>
                   </div>
                 </div>
@@ -139,12 +139,12 @@ export default function ContactPage() {
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 section-header">Find Us Here</h2>
             <p className="text-gray-600 text-lg">
-              Visit our office at 3 Mchlery, Eastlea, Harare
+              Visit our office at {COMPANY_ADDRESS}
             </p>
           </div>
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d391.0490562378794!2d31.062427575000996!3d-17.829423033739115!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sen!2szw!4v1771252504180!5m2!1sen!2szw"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(COMPANY_ADDRESS_FULL)}&hl=en&z=15&output=embed`}
               width="100%"
               height="500"
               style={{ border: 0 }}
@@ -157,7 +157,7 @@ export default function ContactPage() {
           </div>
           <div className="mt-6 text-center">
             <a
-              href="https://www.google.com/maps/search/?api=1&query=3+Mchlery,+Eastlea,+Harare,+Zimbabwe"
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(COMPANY_ADDRESS_FULL)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-lg"

@@ -13,6 +13,7 @@ import {
 } from "@/lib/product-data"
 import { totalQuantityKg } from "@/lib/pack-size"
 import type { Product, QuoteRequest } from "@/lib/types"
+import { COMPANY_ADDRESS_FULL } from "@/lib/site"
 
 const allProducts: Product[] = [
   ...maizeProducts,
@@ -184,7 +185,7 @@ export async function POST(req: NextRequest) {
             </p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
             <p style="color: #9ca3af; font-size: 11px; margin: 0;">
-              ARDA Seeds (Private) Limited | 3 Mchlery, Eastlea, Harare, Zimbabwe
+              ARDA Seeds (Private) Limited | ${COMPANY_ADDRESS_FULL}
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
+import { COMPANY_ADDRESS_FULL } from "@/lib/site"
 
 export async function POST(req: NextRequest) {
   try {
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
             </p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
             <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-              ARDA Seeds | 3 Mchlery, Eastlea, Harare, Zimbabwe<br/>
+              ARDA Seeds | ${COMPANY_ADDRESS_FULL}<br/>
               customerexperience@ardaseeds.co.zw
             </p>
           </div>

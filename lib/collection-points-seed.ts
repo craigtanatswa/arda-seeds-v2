@@ -1,3 +1,5 @@
+import { COMPANY_ADDRESS_FULL } from "@/lib/site"
+
 export type SeedCollectionPoint = {
   name: string
   city: string
@@ -15,7 +17,7 @@ export const COLLECTION_POINTS_SEED: SeedCollectionPoint[] = [
   {
     name: "ARDA Seeds Head Office",
     city: "Harare",
-    address: "3 Mchlery, Eastlea, Harare, Zimbabwe",
+    address: COMPANY_ADDRESS_FULL,
     type: "head_office",
     sort_order: 0,
   },

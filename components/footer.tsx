@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react"
+import { COMPANY_ADDRESS_FULL } from "@/lib/site"
 
 export default function Footer() {
   return (
@@ -117,7 +118,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                <span>ARDA Seeds (PVT) Ltd, Harare, Zimbabwe</span>
+                <span>ARDA Seeds (PVT) Ltd, {COMPANY_ADDRESS_FULL}</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 flex-shrink-0" />
