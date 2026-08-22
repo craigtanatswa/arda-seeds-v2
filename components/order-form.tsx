@@ -8,28 +8,7 @@ import { ArrowLeft, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/lib/cart-context"
-import {
-  maizeProducts,
-  wheatProducts,
-  soybeanProducts,
-  groundnutProducts,
-  sunflowerProducts,
-  cowpeaProducts,
-  sugarBeanProducts,
-  sorghumProducts,
-} from "@/lib/product-data"
-import type { Product } from "@/lib/types"
-
-const allProducts: Product[] = [
-  ...maizeProducts,
-  ...wheatProducts,
-  ...soybeanProducts,
-  ...groundnutProducts,
-  ...sunflowerProducts,
-  ...cowpeaProducts,
-  ...sugarBeanProducts,
-  ...sorghumProducts,
-]
+import { findProduct } from "@/lib/product-data"
 
 export default function OrderForm() {
   const searchParams = useSearchParams()
@@ -37,7 +16,7 @@ export default function OrderForm() {
   const { addItem } = useCart()
 
   const productId = searchParams.get("product") ?? ""
-  const product = allProducts.find((p) => p.id === productId)
+  const product = findProduct(productId)
 
   const [selectedSize, setSelectedSize] = useState<string>(
     product?.packSizes?.[0]?.size ?? ""
