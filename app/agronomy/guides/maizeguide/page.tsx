@@ -30,7 +30,7 @@ const maizeVarieties = [
     color: "from-green-400 to-green-600",
   },
   {
-    name: "ZS265A",
+    name: "ZS265",
     maturity: "130 days",
     yield: "12t/ha",
     features: ["Multi-cobbing white hybrid", "Adaptable to all areas", "Low fertility performer", "Disease resistant"],

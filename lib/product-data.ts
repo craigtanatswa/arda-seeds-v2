@@ -52,12 +52,12 @@ export const maizeProducts: Product[] = [
     packSizes: maizePackSizes,
   },
   {
-    id: "zs265a",
-    name: "ZS265A",
+    id: "zs265",
+    name: "ZS265",
     category: "maize",
     shortDescription: "Multi-cobbing white hybrid maize, medium maturing, 130 days.",
     fullDescription:
-      "ZS265A is a multi-cobbing white hybrid maize with medium maturity, taking 130 days to reach maturity. It is an adaptable variety suitable for all maize growing areas. This variety performs extremely well under low fertility conditions and drought prone areas and can be produced in high potential areas. It has good tolerance to Maize Streak Virus, Grey Leaf Spot, Northern Leaf Blight and Common Rust.",
+      "ZS265 is a multi-cobbing white hybrid maize with medium maturity, taking 130 days to reach maturity. It is an adaptable variety suitable for all maize growing areas. This variety performs extremely well under low fertility conditions and drought prone areas and can be produced in high potential areas. It has good tolerance to Maize Streak Virus, Grey Leaf Spot, Northern Leaf Blight and Common Rust.",
     maturity: "130 days",
     yieldPotential: "12t/ha",
     features: [
