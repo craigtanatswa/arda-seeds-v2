@@ -1,25 +1,5 @@
-import {
-  maizeProducts,
-  wheatProducts,
-  soybeanProducts,
-  groundnutProducts,
-  sunflowerProducts,
-  cowpeaProducts,
-  sugarBeanProducts,
-  sorghumProducts,
-} from "@/lib/product-data"
-import type { CartItem, Product } from "@/lib/types"
-
-const allProducts: Product[] = [
-  ...maizeProducts,
-  ...wheatProducts,
-  ...soybeanProducts,
-  ...groundnutProducts,
-  ...sunflowerProducts,
-  ...cowpeaProducts,
-  ...sugarBeanProducts,
-  ...sorghumProducts,
-]
+import { allProducts, findProduct } from "@/lib/product-data"
+import type { CartItem } from "@/lib/types"
 
 export type ValidatedOrderLine = {
   productId: string
@@ -41,7 +21,7 @@ export function validateOrderItems(
     if (!Number.isInteger(quantity) || quantity < 1) {
       return { ok: false, error: "Quantity must be a whole number of packs (minimum 1)." }
     }
-    const product = allProducts.find((p) => p.id === item.productId)
+    const product = findProduct(item.productId)
     if (!product?.packSizes?.length) {
       return { ok: false, error: `Product not available for online order: ${item.productId}` }
     }

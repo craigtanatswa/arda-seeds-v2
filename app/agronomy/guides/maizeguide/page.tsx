@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { maizeProducts } from "@/lib/product-data"
 import {
   ArrowLeft,
   Calendar,
@@ -20,48 +21,22 @@ import {
   ChevronUp,
 } from "lucide-react"
 
-const maizeVarieties = [
-  {
-    name: "ZS263",
-    maturity: "120-125 days",
-    yield: "10t/ha",
-    features: ["Early maturing", "Good disease tolerance", "Drought tolerant", "Low nitrogen tolerance"],
-    regions: ["Low potential areas", "Medium potential areas", "High potential areas (late crop)"],
-    color: "from-green-400 to-green-600",
-  },
-  {
-    name: "ZS265",
-    maturity: "130 days",
-    yield: "12t/ha",
-    features: ["Multi-cobbing white hybrid", "Adaptable to all areas", "Low fertility performer", "Disease resistant"],
-    regions: ["All maize growing areas", "Drought prone areas", "High potential areas"],
-    color: "from-emerald-400 to-emerald-600",
-  },
-  {
-    name: "ZS269",
-    maturity: "Medium maturity",
-    yield: "9-12t/ha",
-    features: ["Drought tolerant", "Three-way hybrid", "Good disease tolerance", "All zones suitable"],
-    regions: ["All country's agro-ecological zones"],
-    color: "from-teal-400 to-teal-600",
-  },
-  {
-    name: "ZS248A",
-    maturity: "130-138 days",
-    yield: "7-10t/ha",
-    features: ["Multiple cobbing (2-3 cobs)", "Drought tolerant", "Pest resistant", "Disease tolerant"],
-    regions: ["All regions"],
-    color: "from-lime-400 to-lime-600",
-  },
-  {
-    name: "OPV ZM 521",
-    maturity: "120-130 days",
-    yield: "4-7t/ha",
-    features: ["Open Pollinated Variety", "Low fertility champion", "GLS tolerance", "Drought excel"],
-    regions: ["Natural Region IIb", "Natural Region III", "Natural Region IV"],
-    color: "from-green-500 to-green-700",
-  },
+const varietyColors = [
+  "from-green-400 to-green-600",
+  "from-emerald-400 to-emerald-600",
+  "from-teal-400 to-teal-600",
+  "from-lime-400 to-lime-600",
+  "from-green-500 to-green-700",
 ]
+
+const maizeVarieties = maizeProducts.map((product, index) => ({
+  name: product.name,
+  maturity: product.maturity,
+  yield: product.yieldPotential,
+  features: product.features,
+  regions: product.regions,
+  color: varietyColors[index] ?? "from-green-400 to-green-600",
+}))
 
 const plantingSteps = [
   {

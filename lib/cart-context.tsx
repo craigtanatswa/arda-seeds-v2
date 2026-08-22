@@ -1,9 +1,23 @@
 "use client"
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
+import { findProduct, resolveProductId } from "@/lib/product-data"
 import type { CartItem } from "@/lib/types"
 
 const STORAGE_KEY = "arda-seeds-cart"
+
+function migrateCartItem(item: CartItem): CartItem {
+  const resolvedId = resolveProductId(item.productId)
+  const product = findProduct(resolvedId)
+  if (!product) return item
+  if (item.productId === product.id && item.productName === product.name) return item
+  return {
+    ...item,
+    productId: product.id,
+    productName: product.name,
+    category: product.category,
+  }
+}
 
 interface CartContextValue {
   items: CartItem[]
@@ -24,7 +38,7 @@ function loadCart(): CartItem[] {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as CartItem[]
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed) ? parsed.map(migrateCartItem) : []
   } catch {
     return []
   }
