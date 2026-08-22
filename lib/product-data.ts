@@ -52,7 +52,7 @@ export const maizeProducts: Product[] = [
     packSizes: maizePackSizes,
   },
   {
-    id: "zs265",
+    id: "zs265a",
     name: "ZS265",
     category: "maize",
     shortDescription: "Multi-cobbing white hybrid maize, medium maturing, 130 days.",
@@ -456,28 +456,3 @@ export const sorghumProducts: Product[] = [
     ],
   },
 ];
-
-/** Legacy catalogue ids mapped to the current product id. */
-export const PRODUCT_ID_ALIASES: Record<string, string> = {
-  zs265a: "zs265",
-};
-
-export function resolveProductId(id: string): string {
-  return PRODUCT_ID_ALIASES[id.toLowerCase()] ?? id;
-}
-
-export const allProducts: Product[] = [
-  ...maizeProducts,
-  ...wheatProducts,
-  ...soybeanProducts,
-  ...groundnutProducts,
-  ...sunflowerProducts,
-  ...cowpeaProducts,
-  ...sugarBeanProducts,
-  ...sorghumProducts,
-];
-
-export function findProduct(id: string): Product | undefined {
-  const resolvedId = resolveProductId(id);
-  return allProducts.find((p) => p.id === resolvedId);
-}

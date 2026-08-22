@@ -9,7 +9,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { allProducts, findProduct, maizeProducts, wheatProducts, soybeanProducts, groundnutProducts, sunflowerProducts, cowpeaProducts, sugarBeanProducts, sorghumProducts } from "@/lib/product-data"
+import {
+  maizeProducts,
+  wheatProducts,
+  soybeanProducts,
+  groundnutProducts,
+  sunflowerProducts,
+  cowpeaProducts,
+  sugarBeanProducts,
+  sorghumProducts,
+} from "@/lib/product-data"
 import { formatQuoteLineSummary, totalQuantityKg } from "@/lib/pack-size"
 import type { Product } from "@/lib/types"
 import { Loader2, Minus, Plus, Trash2 } from "lucide-react"
@@ -25,6 +34,8 @@ const productCategories: { label: string; products: Product[] }[] = [
   { label: "Sorghum", products: sorghumProducts },
 ]
 
+const allProducts: Product[] = productCategories.flatMap((c) => c.products)
+
 interface QuoteLineItem {
   productId: string
   packSize: string
@@ -32,9 +43,9 @@ interface QuoteLineItem {
 }
 
 function createLineItem(productId = ""): QuoteLineItem {
-  const product = findProduct(productId)
+  const product = allProducts.find((p) => p.id === productId)
   return {
-    productId: product?.id ?? productId,
+    productId,
     packSize: product?.packSizes?.[0]?.size ?? "",
     packCount: 1,
   }

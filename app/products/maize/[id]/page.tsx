@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, ArrowLeft } from "lucide-react"
-import { findProduct, resolveProductId } from "@/lib/product-data"
+import { maizeProducts } from "@/lib/product-data"
 
 interface ProductPageProps {
   params: {
@@ -14,7 +14,7 @@ interface ProductPageProps {
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = findProduct(params.id)
+  const product = maizeProducts.find((p) => p.id === params.id)
 
   if (!product) {
     return {
@@ -29,12 +29,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
-  const resolvedId = resolveProductId(params.id)
-  if (resolvedId !== params.id) {
-    redirect(`/products/maize/${resolvedId}`)
-  }
-
-  const product = findProduct(params.id)
+  const product = maizeProducts.find((p) => p.id === params.id)
 
   if (!product) {
     notFound()

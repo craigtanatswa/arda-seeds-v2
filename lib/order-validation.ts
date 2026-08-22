@@ -21,7 +21,7 @@ export function validateOrderItems(
     if (!Number.isInteger(quantity) || quantity < 1) {
       return { ok: false, error: "Quantity must be a whole number of packs (minimum 1)." }
     }
-    const product = findProduct(item.productId)
+    const product = allProducts.find((p) => p.id === item.productId)
     if (!product?.packSizes?.length) {
       return { ok: false, error: `Product not available for online order: ${item.productId}` }
     }

@@ -1,17 +1,37 @@
 import { randomInt } from "crypto"
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
-import { findProduct } from "@/lib/product-data"
+import {
+  maizeProducts,
+  wheatProducts,
+  soybeanProducts,
+  groundnutProducts,
+  sunflowerProducts,
+  cowpeaProducts,
+  sugarBeanProducts,
+  sorghumProducts,
+} from "@/lib/product-data"
 import { totalQuantityKg } from "@/lib/pack-size"
-import type { QuoteRequest } from "@/lib/types"
+import type { Product, QuoteRequest } from "@/lib/types"
 import { COMPANY_ADDRESS_FULL } from "@/lib/site"
 
+const allProducts: Product[] = [
+  ...maizeProducts,
+  ...wheatProducts,
+  ...soybeanProducts,
+  ...groundnutProducts,
+  ...sunflowerProducts,
+  ...cowpeaProducts,
+  ...sugarBeanProducts,
+  ...sorghumProducts,
+]
+
 function getProductName(productId: string): string {
-  return findProduct(productId)?.name ?? productId
+  return allProducts.find((p) => p.id === productId)?.name ?? productId
 }
 
 function isValidQuoteLine(item: QuoteRequest["products"][number]) {
-  const product = findProduct(item.productId)
+  const product = allProducts.find((p) => p.id === item.productId)
   if (!product?.packSizes?.length || item.packCount < 1) return false
   return product.packSizes.some((pack) => pack.size === item.packSize)
 }
