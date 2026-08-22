@@ -53,6 +53,7 @@
     "nodemailer": "^8.0.1",
     "paynow": "^2.2.2",
     "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
     "react": "^19",
     "react-day-picker": "^8.10.1",
     "react-dom": "^19",
@@ -69,6 +70,7 @@
   "devDependencies": {
     "@types/node": "^22",
     "@types/nodemailer": "^7.0.11",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8",

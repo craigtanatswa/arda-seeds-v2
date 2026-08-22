@@ -8,6 +8,7 @@ import {
   resolvePaynowAuthEmailForWeb,
   type PaynowPaymentMethod,
 } from "@/lib/paynow"
+import { generateInnbucksQrDataUrl } from "@/lib/innbucks-qr"
 import { ensureCollectionPointsSeeded } from "@/lib/ensure-collection-points-seed"
 
 interface OrderBody {
@@ -183,7 +184,11 @@ export async function POST(req: NextRequest) {
         })
         .eq("id", order.id)
 
-      const innbucksEntry = response.isInnbucks ? response.innbucks_info?.[0] : undefined
+      const innbucksEntry = response.innbucks_info?.[0]
+      const authorizationCode = innbucksEntry?.authorizationcode
+      const qrCodeUrl = authorizationCode
+        ? await generateInnbucksQrDataUrl(authorizationCode)
+        : undefined
 
       return NextResponse.json({
         success: true,
@@ -196,11 +201,11 @@ export async function POST(req: NextRequest) {
             ? "Open the InnBucks app and pay using the authorization code below."
             : "Approve the EcoCash prompt on your phone to complete payment."),
         paymentMethod,
-        innbucks: innbucksEntry
+        innbucks: authorizationCode
           ? {
-              authorizationCode: innbucksEntry.authorizationcode,
+              authorizationCode,
               deepLinkUrl: innbucksEntry.deep_link_url,
-              qrCodeUrl: innbucksEntry.qr_code,
+              qrCodeUrl,
               expiresAt: innbucksEntry.expires_at,
             }
           : undefined,

@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import InnbucksQrCode from "@/components/innbucks-qr-code"
 import { useCart } from "@/lib/cart-context"
 import { groupCollectionPointsByCity } from "@/lib/collection-points"
 import {
@@ -36,7 +37,7 @@ const PAYMENT_OPTIONS: {
   {
     id: "ecocash",
     label: "EcoCash",
-    hint: "Pay on your Econet phone — no Paynow login",
+    hint: "Pay on your Econet phone",
   },
   {
     id: "innbucks",
@@ -306,15 +307,8 @@ export default function CartPage() {
                         </p>
                       )}
                     </div>
-                    {innbucksInfo.qrCodeUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={innbucksInfo.qrCodeUrl}
-                        alt="InnBucks payment QR code"
-                        className="mx-auto rounded-lg border border-gray-200"
-                        width={200}
-                        height={200}
-                      />
+                    {innbucksInfo.authorizationCode && (
+                      <InnbucksQrCode authorizationCode={innbucksInfo.authorizationCode} />
                     )}
                     {innbucksInfo.deepLinkUrl && (
                       <Button
