@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabaseServer"
 import { createPaynowVerifier, isPaynowPaymentSettled } from "@/lib/paynow"
 import { sendPaidOrderEmails } from "@/lib/order-emails"
+import { saveOrderReceiptOnPayment } from "@/lib/order-receipt-service"
 import { isInsufficientBalanceError } from "@/lib/payment-errors"
 import type { ValidatedOrderLine } from "@/lib/order-validation"
 
@@ -71,13 +72,16 @@ export async function GET(
             })
             .eq("order_ref", orderRef)
 
-          if (!order.confirmation_email_sent) {
-            const { data: full } = await supabaseServer
-              .from("orders")
-              .select("*, order_items(*)")
-              .eq("order_ref", orderRef)
-              .single()
-            if (full) {
+          const { data: full } = await supabaseServer
+            .from("orders")
+            .select("*, order_items(*)")
+            .eq("order_ref", orderRef)
+            .single()
+
+          if (full) {
+            await saveOrderReceiptOnPayment(full.id)
+
+            if (!order.confirmation_email_sent) {
               const lines: ValidatedOrderLine[] = (full.order_items ?? []).map(
                 (item: {
                   product_id: string

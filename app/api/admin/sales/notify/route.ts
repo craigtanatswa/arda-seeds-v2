@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
           <p>Your order <strong>${order.order_ref}</strong> is ready for collection at:</p>
           <p style="font-weight: bold; color: #111827;">${location}</p>
           <p>Please bring a copy of this email or your order reference when collecting.</p>
-          <p style="color: #6b7280; font-size: 13px;">Questions? Reply to this email or call 0242 704 924/5.</p>
+          <p style="color: #6b7280; font-size: 13px;">Questions? Reply to this email or call 086 125 588.</p>
         </div>
       </div>`
     text = `Dear ${order.first_name},\n\nYour order ${order.order_ref} is ready for collection at:\n${location}\n\nARDA Seeds`

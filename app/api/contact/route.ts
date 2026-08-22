@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
               Our business hours are Monday–Friday 8:00 AM–5:00 PM and Saturday 8:00 AM–12:00 PM. We aim to respond within one business day.
             </p>
             <p style="color: #6b7280; font-size: 14px; margin: 0;">
-              If your enquiry is urgent, please call us at <strong>0242 704 924/5</strong> or <strong>+263 71 149 6082</strong>.
+              If your enquiry is urgent, please call us at <strong>086 125 588</strong> or <strong>+263 71 149 6082</strong>.
             </p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
             <p style="color: #9ca3af; font-size: 12px; margin: 0;">

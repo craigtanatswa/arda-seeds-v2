@@ -95,6 +95,7 @@ export interface SalesOrder {
   paynow_status?: string | null
   paid_at?: string | null
   confirmation_email_sent?: boolean
+  receipt_path?: string | null
   created_at?: string
   updated_at?: string
   order_items?: SalesOrderItem[]

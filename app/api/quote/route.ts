@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
               If you have any questions in the meantime, please contact us:
             </p>
             <p style="color: #6b7280; font-size: 13px; margin: 0 0 4px;">
-              Phone: <strong>0242 704 924/5</strong> | <strong>+263 71 149 6082</strong>
+              Phone: <strong>086 125 588</strong> | <strong>+263 71 149 6082</strong>
             </p>
             <p style="color: #6b7280; font-size: 13px; margin: 0;">
               Email: <a href="mailto:customerexperience@ardaseeds.co.zw" style="color: #15803d;">customerexperience@ardaseeds.co.zw</a>

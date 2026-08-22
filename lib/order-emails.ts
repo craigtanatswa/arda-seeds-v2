@@ -96,7 +96,8 @@ export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
           </p>
           <p style="color: #111827; font-weight: bold; margin: 16px 0;">${collectionLabel}</p>
           <p style="color: #374151; line-height: 1.6;">
-            You will receive another email when your order is ready for collection.
+            You will receive another email when your order is ready for collection. We will also
+            email you progress updates on your delivery.
           </p>
           <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
             <table style="width: 100%; border-collapse: collapse;">
@@ -130,7 +131,7 @@ export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
             </table>
           </div>
           <p style="color: #6b7280; font-size: 13px;">
-            Phone: <strong>0242 704 924/5</strong> | <strong>+263 71 149 6082</strong><br/>
+            Phone: <strong>086 125 588</strong> | <strong>+263 71 149 6082</strong><br/>
             Email: <a href="mailto:${SALES_INBOX}" style="color: #15803d;">${SALES_INBOX}</a>
           </p>
         </div>

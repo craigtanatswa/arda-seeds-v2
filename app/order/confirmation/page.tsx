@@ -5,6 +5,8 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { CheckCircle2, Clock, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import OrderReceiptDownloadButton from "@/components/order-receipt-download-button"
+import { isOrderPaid } from "@/lib/order-receipt"
 
 type OrderView = {
   order_ref: string
@@ -82,15 +84,7 @@ function ConfirmationContent() {
     )
   }
 
-  const paid =
-    order.status === "paid" ||
-    order.status === "processing" ||
-    order.status === "ready_for_collection" ||
-    order.status === "awaiting_customer_collection" ||
-    order.status === "awaiting_customer_delivery" ||
-    order.status === "out_for_delivery" ||
-    order.status === "collected" ||
-    order.status === "delivered"
+  const paid = isOrderPaid(order.status)
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-lg text-center">
@@ -125,8 +119,9 @@ function ConfirmationContent() {
         )}
         {paid ? (
           <p className="text-sm text-gray-500 mb-6">
-            Payment confirmed. A receipt email has been sent. Our sales team will notify you when
-            your order is ready for collection.
+            Payment confirmed. A receipt email has been sent, and you can download a copy below.
+            Our sales team will notify you when your order is ready for collection, and we will
+            email you progress updates on your delivery.
           </p>
         ) : (
           <p className="text-sm text-gray-500 mb-6">
@@ -134,9 +129,14 @@ function ConfirmationContent() {
             a moment to update — refresh shortly or keep this tab open.
           </p>
         )}
-        <Button asChild className="bg-green-700 hover:bg-green-800 w-full">
-          <Link href="/products">Continue Shopping</Link>
-        </Button>
+        <div className="flex flex-col gap-3">
+          {paid && (
+            <OrderReceiptDownloadButton orderRef={order.order_ref} className="w-full" />
+          )}
+          <Button asChild className="bg-green-700 hover:bg-green-800 w-full">
+            <Link href="/products">Continue Shopping</Link>
+          </Button>
+        </div>
       </div>
     </div>
   )

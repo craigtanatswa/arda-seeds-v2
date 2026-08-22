@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabaseServer"
 import { createPaynowVerifier, isPaynowPaymentSettled } from "@/lib/paynow"
 import { sendPaidOrderEmails } from "@/lib/order-emails"
+import { saveOrderReceiptOnPayment } from "@/lib/order-receipt-service"
 import type { ValidatedOrderLine } from "@/lib/order-validation"
 
 function parsePaynowBody(raw: string): Record<string, string> {
@@ -71,7 +72,12 @@ export async function POST(req: NextRequest) {
       })
       .eq("id", order.id)
 
-    // Customer/sales receipt only when Paynow confirms settlement — never on pending/created.
+    // Persist receipt whenever Paynow confirms settlement.
+    if (paid) {
+      await saveOrderReceiptOnPayment(order.id)
+    }
+
+    // Customer/sales receipt email only once after Paynow confirms settlement.
     if (paid && !order.confirmation_email_sent) {
       const lines: ValidatedOrderLine[] = (order.order_items ?? []).map(
         (item: {

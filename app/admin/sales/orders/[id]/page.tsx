@@ -12,6 +12,8 @@ import { useAdminRole } from "@/lib/hooks/use-admin-role"
 import { groupCollectionPointsByCity } from "@/lib/collection-points"
 import type { CollectionPoint, SalesOrder, SalesOrderItem } from "@/lib/types"
 import { ArrowLeft, LogOut } from "lucide-react"
+import AdminOrderReceiptDownloadButton from "@/components/admin-order-receipt-download-button"
+import { isOrderPaid } from "@/lib/order-receipt"
 
 export default function SalesOrderDetailPage() {
   const params = useParams()
@@ -260,6 +262,16 @@ export default function SalesOrderDetailPage() {
             </tbody>
           </table>
         </div>
+
+        {isOrderPaid(order.status) && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
+            <h2 className="font-semibold">Receipt</h2>
+            <p className="text-sm text-gray-500">
+              The payment receipt PDF is saved with this order and can be downloaded at any time.
+            </p>
+            <AdminOrderReceiptDownloadButton orderId={order.id} />
+          </div>
+        )}
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
           <h2 className="font-semibold">Customer notifications</h2>

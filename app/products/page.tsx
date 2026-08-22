@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import ProductCategoryList from "@/components/product-category-list"
 import ProductFilter from "@/components/product-filter"
 
@@ -19,8 +21,15 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2">Our Products</h1>
-      <p className="text-gray-600 mb-8">Browse our complete catalog of high-quality agricultural seeds</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Our Products</h1>
+          <p className="text-gray-600">Browse our complete catalog of high-quality agricultural seeds</p>
+        </div>
+        <Button asChild className="bg-green-700 hover:bg-green-800 shrink-0">
+          <Link href="/order/track">Track your order</Link>
+        </Button>
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-1/4">

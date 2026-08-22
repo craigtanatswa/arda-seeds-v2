@@ -132,7 +132,7 @@ To deploy your own instance:
 **ARDA Seeds (PVT) Ltd**
 Harare, Zimbabwe
 
-- 📞 0242 704 924/5 | +263 71 149 6082
+- 📞 086 125 588 | +263 71 149 6082
 - 📧 [customerexperience@ardaseeds.co.zw](mailto:customerexperience@ardaseeds.co.zw)
 - 🌐 [https://arda-seeds-website.vercel.app](https://arda-seeds-website.vercel.app)
 

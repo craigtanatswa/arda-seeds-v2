@@ -426,6 +426,9 @@ export default function CartPage() {
               className={`mt-1 ${errors.email ? "border-red-500" : ""}`}
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            <p className="text-xs text-gray-500 mt-1">
+              We will email you a receipt and progress updates on your delivery.
+            </p>
           </div>
 
           <div className="mb-4">
