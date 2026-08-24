@@ -7,9 +7,14 @@ type PaidOrderEmailInput = {
   lastName: string
   email: string
   phone: string
+  fulfillmentType: string
   collectionName: string
   collectionCity: string
   collectionAddress: string | null
+  deliveryAddress: string | null
+  deliveryCity?: string | null
+  deliveryFee?: number
+  subtotal?: number
   lines: ValidatedOrderLine[]
   total: number
 }
@@ -32,9 +37,26 @@ function itemRows(lines: ValidatedOrderLine[]) {
 export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
   const transporter = createMailTransporter()
   const fullName = `${input.firstName} ${input.lastName}`
-  const collectionLabel = `${input.collectionName}, ${input.collectionCity}${
-    input.collectionAddress ? ` (${input.collectionAddress})` : ""
-  }`
+  const isDelivery = input.fulfillmentType === "delivery"
+  const fulfillmentLabel = isDelivery
+    ? `Delivery: ${input.deliveryAddress || input.deliveryCity || "Address to be confirmed"}`
+    : `${input.collectionName}, ${input.collectionCity}${
+        input.collectionAddress ? ` (${input.collectionAddress})` : ""
+      }`
+  const fulfillmentRowLabel = isDelivery ? "Delivery:" : "Collection:"
+  const deliveryFee = Number(input.deliveryFee ?? 0)
+  const subtotal = Number(input.subtotal ?? input.total - deliveryFee)
+  const extrasRows =
+    deliveryFee > 0
+      ? `<tr>
+                <td colspan="4" style="padding: 10px 8px; text-align: right; color: #374151;">Subtotal:</td>
+                <td style="padding: 10px 8px; color: #374151; text-align: right;">US$ ${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td colspan="4" style="padding: 10px 8px; text-align: right; color: #374151;">Delivery:</td>
+                <td style="padding: 10px 8px; color: #374151; text-align: right;">US$ ${deliveryFee.toFixed(2)}</td>
+              </tr>`
+      : ""
 
   await transporter.sendMail({
     from: senderFrom("ARDA Seeds Website"),
@@ -53,7 +75,7 @@ export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
             <tr><td style="padding: 6px 0; font-weight: bold; color: #374151; width: 140px;">Name:</td><td style="padding: 6px 0; color: #4b5563;">${fullName}</td></tr>
             <tr><td style="padding: 6px 0; font-weight: bold; color: #374151;">Email:</td><td style="padding: 6px 0; color: #4b5563;"><a href="mailto:${input.email}" style="color: #15803d;">${input.email}</a></td></tr>
             <tr><td style="padding: 6px 0; font-weight: bold; color: #374151;">Phone:</td><td style="padding: 6px 0; color: #4b5563;">${input.phone}</td></tr>
-            <tr><td style="padding: 6px 0; font-weight: bold; color: #374151;">Collection:</td><td style="padding: 6px 0; color: #4b5563;">${collectionLabel}</td></tr>
+            <tr><td style="padding: 6px 0; font-weight: bold; color: #374151;">${fulfillmentRowLabel}</td><td style="padding: 6px 0; color: #4b5563;">${fulfillmentLabel}</td></tr>
           </table>
           <h2 style="font-size: 16px; color: #111827; margin: 0 0 12px;">Order Items</h2>
           <table style="width: 100%; border-collapse: collapse; background: white; border: 1px solid #e5e7eb; margin-bottom: 16px;">
@@ -68,6 +90,7 @@ export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
             </thead>
             <tbody>${itemRows(input.lines)}</tbody>
             <tfoot>
+              ${extrasRows}
               <tr style="background: #f9fafb;">
                 <td colspan="4" style="padding: 12px 8px; font-weight: bold; text-align: right;">Order Total:</td>
                 <td style="padding: 12px 8px; font-weight: bold; color: #15803d; text-align: right;">US$ ${input.total.toFixed(2)}</td>
@@ -92,12 +115,17 @@ export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
         </div>
         <div style="background: #f9fafb; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
           <p style="color: #374151; line-height: 1.6;">
-            Your payment has been confirmed. This email is your receipt. Our sales team will prepare your order for collection at:
+            Your payment has been confirmed. This email is your receipt. Our sales team will prepare your order for ${
+              isDelivery ? "delivery to:" : "collection at:"
+            }
           </p>
-          <p style="color: #111827; font-weight: bold; margin: 16px 0;">${collectionLabel}</p>
+          <p style="color: #111827; font-weight: bold; margin: 16px 0;">${fulfillmentLabel}</p>
           <p style="color: #374151; line-height: 1.6;">
-            You will receive another email when your order is ready for collection. We will also
-            email you progress updates on your delivery.
+            ${
+              isDelivery
+                ? "You will receive another email when your order is out for delivery."
+                : "You will receive another email when your order is ready for collection."
+            }
           </p>
           <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
             <table style="width: 100%; border-collapse: collapse;">
@@ -123,6 +151,18 @@ export async function sendPaidOrderEmails(input: PaidOrderEmailInput) {
                   .join("")}
               </tbody>
               <tfoot>
+                ${
+                  deliveryFee > 0
+                    ? `<tr>
+                  <td colspan="3" style="padding: 8px 4px; text-align: right;">Subtotal:</td>
+                  <td style="padding: 8px 4px; text-align: right;">US$ ${subtotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td colspan="3" style="padding: 8px 4px; text-align: right;">Delivery:</td>
+                  <td style="padding: 8px 4px; text-align: right;">US$ ${deliveryFee.toFixed(2)}</td>
+                </tr>`
+                    : ""
+                }
                 <tr>
                   <td colspan="3" style="padding: 10px 4px; font-weight: bold; text-align: right;">Order Total:</td>
                   <td style="padding: 10px 4px; font-weight: bold; color: #15803d; text-align: right;">US$ ${input.total.toFixed(2)}</td>

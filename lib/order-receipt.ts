@@ -11,6 +11,8 @@ export type OrderReceiptInput = {
   collectionAddress: string | null
   fulfillmentType: string
   deliveryAddress: string | null
+  deliveryFee?: number
+  subtotal?: number
   lines: ValidatedOrderLine[]
   total: number
   paidAt: string | null

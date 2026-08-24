@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { supabase } from "@/lib/supabaseClient"
 import type { SalesOrder } from "@/lib/types"
 import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
-import { LogOut, ShoppingCart, Users, MapPin, Eye } from "lucide-react"
-import { useAdminRole } from "@/lib/hooks/use-admin-role"
+import { SalesAdminNav } from "@/components/admin/sales-admin-nav"
+import { SalesOrderStatusBadge } from "@/components/admin/status-badge"
+import { ShoppingCart, Users, MapPin, Truck, Eye } from "lucide-react"
 
 const STATUS_LABELS: Record<string, string> = {
   pending_payment: "Pending payment",
@@ -26,8 +26,6 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export default function SalesDashboardPage() {
-  const router = useRouter()
-  const userRole = useAdminRole()
   const [orders, setOrders] = useState<SalesOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState("all")
@@ -57,7 +55,7 @@ export default function SalesDashboardPage() {
       supabase
         .from("orders")
         .select("id", { count: "exact", head: true })
-        .eq("status", "ready_for_collection"),
+        .in("status", ["ready_for_collection", "out_for_delivery"]),
       supabase
         .from("orders")
         .select("id", { count: "exact", head: true })
@@ -72,46 +70,9 @@ export default function SalesDashboardPage() {
     })
   }, [])
 
-  const handleSignOut = async () => {
-    await supabase?.auth.signOut()
-    router.replace("/admin/login")
-    router.refresh()
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="text-green-700 font-semibold hover:text-green-800">
-              ARDA Seeds
-            </Link>
-            {userRole === "admin" && (
-              <Link href="/admin" className="text-gray-600 hover:text-gray-900 text-sm">
-                Dashboard
-              </Link>
-            )}
-            <Link href="/admin/sales" className="text-gray-900 font-medium">
-              Orders
-            </Link>
-            <Link href="/admin/sales/customers" className="text-gray-600 hover:text-gray-900 text-sm">
-              Customers
-            </Link>
-            <Link
-              href="/admin/sales/collection-points"
-              className="text-gray-600 hover:text-gray-900 text-sm"
-            >
-              Collection points
-            </Link>
-            <Link href="/admin/sales/promo-banner" className="text-gray-600 hover:text-gray-900 text-sm">
-              Promo banner
-            </Link>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
-            <LogOut className="h-4 w-4" /> Sign out
-          </Button>
-        </div>
-      </header>
+      <SalesAdminNav current="orders" />
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -175,7 +136,7 @@ export default function SalesDashboardPage() {
                   <tr>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Reference</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Customer</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Collection</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Fulfillment</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Total</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
                     <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
@@ -190,16 +151,23 @@ export default function SalesDashboardPage() {
                         <div className="text-xs text-gray-500">{order.email}</div>
                       </td>
                       <td className="px-4 py-3">
-                        {order.fulfillment_type === "delivery"
-                          ? "Delivery"
-                          : order.collection_point_name}
-                        <div className="text-xs text-gray-500">{order.collection_city}</div>
+                        {order.fulfillment_type === "delivery" ? (
+                          <>
+                            Delivery
+                            <div className="text-xs text-gray-500">
+                              {order.delivery_city || order.delivery_address}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {order.collection_point_name}
+                            <div className="text-xs text-gray-500">{order.collection_city}</div>
+                          </>
+                        )}
                       </td>
                       <td className="px-4 py-3">US$ {Number(order.total_usd).toFixed(2)}</td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
-                          {STATUS_LABELS[order.status] ?? order.status}
-                        </span>
+                        <SalesOrderStatusBadge status={order.status} />
                       </td>
                       <td className="px-4 py-3 text-right">
                         <Button asChild variant="outline" size="sm" className="gap-1">
@@ -225,6 +193,12 @@ export default function SalesDashboardPage() {
             className="inline-flex items-center gap-1 hover:text-green-700"
           >
             <MapPin className="h-4 w-4" /> Collection points
+          </Link>
+          <Link
+            href="/admin/sales/delivery-locations"
+            className="inline-flex items-center gap-1 hover:text-green-700"
+          >
+            <Truck className="h-4 w-4" /> Delivery
           </Link>
         </div>
       </main>

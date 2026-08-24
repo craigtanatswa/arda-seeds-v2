@@ -27,17 +27,21 @@ export interface CartItem {
   quantity: number
 }
 
+export type CollectionPointType = "head_office" | "depot" | "retail_partner"
+export type OrderFulfillmentType = "collection" | "delivery"
+
 export interface OrderRequest {
   firstName: string
   lastName: string
   email: string
   phone: string
-  collectionPointId: string
+  fulfillmentType?: OrderFulfillmentType
+  collectionPointId?: string
+  deliveryCity?: string
+  deliveryAddress?: string
   items: CartItem[]
 }
 
-export type CollectionPointType = "head_office" | "depot" | "retail_partner"
-export type OrderFulfillmentType = "collection" | "delivery"
 export type OrderStatus =
   | "pending_payment"
   | "paid"
@@ -88,6 +92,11 @@ export interface SalesOrder {
   collection_city: string | null
   collection_address: string | null
   delivery_address: string | null
+  delivery_city: string | null
+  delivery_fee_usd: number
+  delivery_distance_km: number | null
+  delivery_weight_kg: number | null
+  subtotal_usd: number
   total_usd: number
   status: OrderStatus
   paynow_poll_url?: string | null

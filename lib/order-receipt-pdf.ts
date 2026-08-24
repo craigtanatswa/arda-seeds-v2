@@ -13,6 +13,23 @@ const DARK = rgb(0.067, 0.094, 0.153)
 const MUTED = rgb(0.42, 0.447, 0.502)
 const BORDER = rgb(0.898, 0.906, 0.922)
 
+function wrapText(text: string, font: { widthOfTextAtSize: (t: string, size: number) => number }, size: number, maxWidth: number): string[] {
+  const words = text.split(" ")
+  const lines: string[] = []
+  let current = ""
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word
+    if (font.widthOfTextAtSize(next, size) <= maxWidth) {
+      current = next
+    } else {
+      if (current) lines.push(current)
+      current = word
+    }
+  }
+  if (current) lines.push(current)
+  return lines.length ? lines : [text]
+}
+
 function formatReceiptDate(paidAt: string | null): string {
   const date = paidAt ? new Date(paidAt) : new Date()
   return date.toLocaleDateString("en-ZW", {
@@ -37,7 +54,7 @@ export async function generateOrderReceiptPdf(
   const logoPath = path.join(process.cwd(), "public", "images", "ardalogo.png")
   const logoBytes = await readFile(logoPath)
   const logoImage = await pdfDoc.embedPng(logoBytes)
-  const logoScale = Math.min(140 / logoImage.width, 48 / logoImage.height)
+  const logoScale = Math.min(200 / logoImage.width, 72 / logoImage.height)
   const logoWidth = logoImage.width * logoScale
   const logoHeight = logoImage.height * logoScale
 
@@ -116,7 +133,7 @@ export async function generateOrderReceiptPdf(
     `${input.firstName} ${input.lastName}`,
     input.email,
     input.phone,
-    formatFulfillmentLabel(input),
+    ...wrapText(formatFulfillmentLabel(input), font, 10, contentWidth),
   ]
 
   for (const line of customerLines) {
@@ -190,6 +207,42 @@ export async function generateOrderReceiptPdf(
   }
 
   y -= 8
+  const deliveryFee = Number(input.deliveryFee ?? 0)
+  const subtotal = Number(input.subtotal ?? input.total - deliveryFee)
+  if (deliveryFee > 0) {
+    const subtotalLabel = "Subtotal:"
+    const deliveryLabel = "Delivery:"
+    page.drawText(subtotalLabel, {
+      x: colUnit - font.widthOfTextAtSize(subtotalLabel, 10),
+      y,
+      size: 10,
+      font,
+      color: DARK,
+    })
+    page.drawText(`US$ ${subtotal.toFixed(2)}`, {
+      x: colTotal,
+      y,
+      size: 10,
+      font,
+      color: DARK,
+    })
+    y -= 16
+    page.drawText(deliveryLabel, {
+      x: colUnit - font.widthOfTextAtSize(deliveryLabel, 10),
+      y,
+      size: 10,
+      font,
+      color: DARK,
+    })
+    page.drawText(`US$ ${deliveryFee.toFixed(2)}`, {
+      x: colTotal,
+      y,
+      size: 10,
+      font,
+      color: DARK,
+    })
+    y -= 18
+  }
   const totalLabel = "Order Total:"
   const totalValue = `US$ ${input.total.toFixed(2)}`
   page.drawText(totalLabel, {
@@ -218,7 +271,9 @@ export async function generateOrderReceiptPdf(
   })
   y -= 14
   page.drawText(
-    "Our sales team will notify you when your order is ready for collection.",
+    input.fulfillmentType === "delivery"
+      ? "Our sales team will notify you when your order is out for delivery."
+      : "Our sales team will notify you when your order is ready for collection.",
     {
       x: margin,
       y,
@@ -228,13 +283,18 @@ export async function generateOrderReceiptPdf(
     }
   )
   y -= 14
-  page.drawText("We will also email you progress updates on your delivery.", {
-    x: margin,
-    y,
-    size: 10,
-    font,
-    color: MUTED,
-  })
+  page.drawText(
+    input.fulfillmentType === "delivery"
+      ? "Keep this receipt for when your order is delivered."
+      : "We will also email you progress updates on your delivery.",
+    {
+      x: margin,
+      y,
+      size: 10,
+      font,
+      color: MUTED,
+    }
+  )
 
   const footerY = margin + 36
   page.drawLine({

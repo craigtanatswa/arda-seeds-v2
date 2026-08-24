@@ -13,6 +13,7 @@ import { groupCollectionPointsByCity } from "@/lib/collection-points"
 import type { CollectionPoint, SalesOrder, SalesOrderItem } from "@/lib/types"
 import { ArrowLeft, LogOut } from "lucide-react"
 import AdminOrderReceiptDownloadButton from "@/components/admin-order-receipt-download-button"
+import { SalesOrderStatusBadge } from "@/components/admin/status-badge"
 import { isOrderPaid } from "@/lib/order-receipt"
 
 export default function SalesOrderDetailPage() {
@@ -62,14 +63,24 @@ export default function SalesOrderDetailPage() {
     return data.session?.access_token
   }
 
+  const isDelivery = order?.fulfillment_type === "delivery"
+
   const notify = async (action: "ready" | "oos_collection" | "oos_delivery") => {
-    const labels = {
-      ready: "Mark ready for collection and email the customer?",
-      oos_collection:
-        "Email the customer that this location is out of stock and ask them to choose a new collection point from the active list?",
-      oos_delivery:
-        "Email the customer that this location is out of stock and ask them to reply with a delivery address?",
-    }
+    const labels = isDelivery
+      ? {
+          ready: "Mark this order as out for delivery and email the customer?",
+          oos_collection:
+            "Email the customer that delivery is not available and ask them to choose a collection point from the active list?",
+          oos_delivery:
+            "Email the customer that this delivery address cannot be completed and ask them to reply with a new address?",
+        }
+      : {
+          ready: "Mark ready for collection and email the customer?",
+          oos_collection:
+            "Email the customer that this location is out of stock and ask them to choose a new collection point from the active list?",
+          oos_delivery:
+            "Email the customer that this location is out of stock and ask them to reply with a delivery address?",
+        }
     const ok = await confirm(labels[action], { title: "Send customer email", confirmLabel: "Send email" })
     if (!ok) return
     setBusy(true)
@@ -131,8 +142,8 @@ export default function SalesOrderDetailPage() {
       await alert("Enter the delivery address from the customer reply.", "Missing address")
       return
     }
-    const ok = await confirm("Switch this order to delivery with the address entered?", {
-      title: "Apply delivery",
+    const ok = await confirm("Update this order to the delivery address entered?", {
+      title: "Apply delivery address",
       confirmLabel: "Update order",
     })
     if (!ok) return
@@ -153,7 +164,7 @@ export default function SalesOrderDetailPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed")
-      await alert("Order switched to delivery.", "Success")
+      await alert("Delivery address updated.", "Success")
       await load()
     } catch (err: unknown) {
       await alert(err instanceof Error ? err.message : "Failed", "Error")
@@ -208,8 +219,9 @@ export default function SalesOrderDetailPage() {
       <main className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{order.order_ref}</h1>
-          <p className="text-gray-600 mt-1">
-            Status: <strong>{order.status}</strong> · US$ {Number(order.total_usd).toFixed(2)}
+          <p className="text-gray-600 mt-1 flex flex-wrap items-center gap-2">
+            Status: <SalesOrderStatusBadge status={order.status} /> · US${" "}
+            {Number(order.total_usd).toFixed(2)}
           </p>
         </div>
 
@@ -234,7 +246,23 @@ export default function SalesOrderDetailPage() {
                 </p>
               </>
             ) : (
-              <p>{order.delivery_address}</p>
+              <>
+                <p>{order.delivery_address}</p>
+                {order.delivery_city && (
+                  <p className="text-gray-500">{order.delivery_city}</p>
+                )}
+                {Number(order.delivery_fee_usd ?? 0) > 0 && (
+                  <p className="text-gray-500 mt-2">
+                    Delivery fee US$ {Number(order.delivery_fee_usd).toFixed(2)}
+                    {order.delivery_weight_kg != null
+                      ? ` · ${Number(order.delivery_weight_kg)} kg`
+                      : ""}
+                    {order.delivery_distance_km != null
+                      ? ` · ${Number(order.delivery_distance_km)} km`
+                      : ""}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -261,6 +289,22 @@ export default function SalesOrderDetailPage() {
               ))}
             </tbody>
           </table>
+          {Number(order.delivery_fee_usd ?? 0) > 0 && (
+            <div className="mt-3 text-sm text-gray-600 space-y-1">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>US$ {Number(order.subtotal_usd ?? order.total_usd).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivery</span>
+                <span>US$ {Number(order.delivery_fee_usd).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-gray-800">
+                <span>Total</span>
+                <span>US$ {Number(order.total_usd).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {isOrderPaid(order.status) && (
@@ -276,8 +320,8 @@ export default function SalesOrderDetailPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
           <h2 className="font-semibold">Customer notifications</h2>
           <p className="text-sm text-gray-500">
-            Choose one action. Out-of-stock emails ask the customer to reply; update the order only
-            after you receive their reply.
+            Choose one action. Emails ask the customer to reply when an address or location change is
+            needed; update the order only after you receive their reply.
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
@@ -285,13 +329,13 @@ export default function SalesOrderDetailPage() {
               className="bg-green-700 hover:bg-green-800"
               onClick={() => notify("ready")}
             >
-              Order is ready
+              {isDelivery ? "Out for delivery" : "Order is ready"}
             </Button>
             <Button disabled={busy} variant="outline" onClick={() => notify("oos_collection")}>
-              OOS — new collection location
+              {isDelivery ? "Cannot deliver — offer collection" : "OOS — new collection location"}
             </Button>
             <Button disabled={busy} variant="outline" onClick={() => notify("oos_delivery")}>
-              OOS — needs delivery address
+              {isDelivery ? "Cannot deliver — new address" : "OOS — needs delivery address"}
             </Button>
           </div>
         </div>

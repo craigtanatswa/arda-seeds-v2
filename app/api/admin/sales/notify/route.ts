@@ -31,18 +31,42 @@ export async function POST(request: NextRequest) {
   await ensureCollectionPointsSeeded()
 
   const transporter = createMailTransporter()
+  const isDeliveryOrder = order.fulfillment_type === "delivery"
+  const deliveryLabel = order.delivery_address || order.delivery_city || "your delivery address"
+  const collectionLabel = `${order.collection_point_name ?? "your collection point"}, ${order.collection_city ?? ""}`.replace(
+    /, $/,
+    ""
+  )
   let newStatus: OrderStatus
   let subject: string
   let html: string
   let text: string
 
   if (action === "ready") {
-    newStatus = "ready_for_collection"
-    const location = `${order.collection_point_name}, ${order.collection_city}${
-      order.collection_address ? ` — ${order.collection_address}` : ""
-    }`
-    subject = `Your ARDA Seeds order ${order.order_ref} is ready for collection`
-    html = `
+    if (isDeliveryOrder) {
+      newStatus = "out_for_delivery"
+      subject = `Your ARDA Seeds order ${order.order_ref} is out for delivery`
+      html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #15803d; padding: 28px; border-radius: 12px 12px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 20px;">Order out for delivery</h1>
+        </div>
+        <div style="padding: 28px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+          <p>Dear ${order.first_name},</p>
+          <p>Your order <strong>${order.order_ref}</strong> is on its way to:</p>
+          <p style="font-weight: bold; color: #111827;">${deliveryLabel}</p>
+          <p>Please keep your phone available so our driver can reach you on arrival.</p>
+          <p style="color: #6b7280; font-size: 13px;">Questions? Reply to this email or call 086 125 588.</p>
+        </div>
+      </div>`
+      text = `Dear ${order.first_name},\n\nYour order ${order.order_ref} is out for delivery to:\n${deliveryLabel}\n\nARDA Seeds`
+    } else {
+      newStatus = "ready_for_collection"
+      const location = `${order.collection_point_name}, ${order.collection_city}${
+        order.collection_address ? ` — ${order.collection_address}` : ""
+      }`
+      subject = `Your ARDA Seeds order ${order.order_ref} is ready for collection`
+      html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #15803d; padding: 28px; border-radius: 12px 12px 0 0;">
           <h1 style="color: white; margin: 0; font-size: 20px;">Order ready for collection</h1>
@@ -55,7 +79,8 @@ export async function POST(request: NextRequest) {
           <p style="color: #6b7280; font-size: 13px;">Questions? Reply to this email or call 086 125 588.</p>
         </div>
       </div>`
-    text = `Dear ${order.first_name},\n\nYour order ${order.order_ref} is ready for collection at:\n${location}\n\nARDA Seeds`
+      text = `Dear ${order.first_name},\n\nYour order ${order.order_ref} is ready for collection at:\n${location}\n\nARDA Seeds`
+    }
   } else if (action === "oos_collection") {
     newStatus = "awaiting_customer_collection"
     const { data: points } = await supabaseServer
@@ -67,17 +92,18 @@ export async function POST(request: NextRequest) {
     const active = (points ?? []) as CollectionPoint[]
     const listHtml = formatCollectionPointsHtml(active)
     const listText = formatCollectionPointsForEmail(active)
-    subject = `Action needed — stock unavailable at your collection point (${order.order_ref})`
-    html = `
+    if (isDeliveryOrder) {
+      subject = `Action needed — delivery unavailable, please choose a collection point (${order.order_ref})`
+      html = `
       <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto;">
         <div style="background: #b45309; padding: 28px; border-radius: 12px 12px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 20px;">Collection point out of stock</h1>
+          <h1 style="color: white; margin: 0; font-size: 20px;">Delivery not available — collection offered</h1>
         </div>
         <div style="padding: 28px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
           <p>Dear ${order.first_name},</p>
           <p>
-            Unfortunately the location you selected for order <strong>${order.order_ref}</strong>
-            (<em>${order.collection_point_name}, ${order.collection_city}</em>) does not currently have stock available.
+            Unfortunately we cannot complete delivery for order <strong>${order.order_ref}</strong>
+            to <em>${deliveryLabel}</em> at this time.
           </p>
           <p>
             Please <strong>reply to this email</strong> with the name of the closest collection point from the list below
@@ -88,7 +114,53 @@ export async function POST(request: NextRequest) {
           <p style="margin-top: 24px; color: #6b7280; font-size: 13px;">Reply to: ${SALES_INBOX}</p>
         </div>
       </div>`
-    text = `Dear ${order.first_name},\n\nYour selected collection point for ${order.order_ref} (${order.collection_point_name}) is out of stock.\n\nPlease reply with the closest location from this list:\n\n${listText}\n\nARDA Seeds — ${SALES_INBOX}`
+      text = `Dear ${order.first_name},\n\nDelivery for ${order.order_ref} to ${deliveryLabel} is not available.\n\nPlease reply with the closest collection point from this list:\n\n${listText}\n\nARDA Seeds — ${SALES_INBOX}`
+    } else {
+      subject = `Action needed — stock unavailable at your collection point (${order.order_ref})`
+      html = `
+      <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto;">
+        <div style="background: #b45309; padding: 28px; border-radius: 12px 12px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 20px;">Collection point out of stock</h1>
+        </div>
+        <div style="padding: 28px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+          <p>Dear ${order.first_name},</p>
+          <p>
+            Unfortunately the location you selected for order <strong>${order.order_ref}</strong>
+            (<em>${collectionLabel}</em>) does not currently have stock available.
+          </p>
+          <p>
+            Please <strong>reply to this email</strong> with the name of the closest collection point from the list below
+            that works for you. We will update your order once we receive your reply.
+          </p>
+          <h2 style="font-size: 16px; margin-top: 24px;">Available collection points</h2>
+          ${listHtml}
+          <p style="margin-top: 24px; color: #6b7280; font-size: 13px;">Reply to: ${SALES_INBOX}</p>
+        </div>
+      </div>`
+      text = `Dear ${order.first_name},\n\nYour selected collection point for ${order.order_ref} (${order.collection_point_name}) is out of stock.\n\nPlease reply with the closest location from this list:\n\n${listText}\n\nARDA Seeds — ${SALES_INBOX}`
+    }
+  } else if (isDeliveryOrder) {
+    newStatus = "awaiting_customer_delivery"
+    subject = `Action needed — new delivery address for order ${order.order_ref}`
+    html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #b45309; padding: 28px; border-radius: 12px 12px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 20px;">Delivery address needs an update</h1>
+        </div>
+        <div style="padding: 28px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+          <p>Dear ${order.first_name},</p>
+          <p>
+            We cannot complete delivery for order <strong>${order.order_ref}</strong> to
+            <em>${deliveryLabel}</em> at this time.
+          </p>
+          <p>
+            Please <strong>reply to this email</strong> with a new full delivery address / location so our sales team
+            can update your order.
+          </p>
+          <p style="color: #6b7280; font-size: 13px;">Reply to: ${SALES_INBOX}</p>
+        </div>
+      </div>`
+    text = `Dear ${order.first_name},\n\nWe cannot deliver order ${order.order_ref} to ${deliveryLabel}.\n\nPlease reply with a new delivery address.\n\nARDA Seeds — ${SALES_INBOX}`
   } else {
     newStatus = "awaiting_customer_delivery"
     subject = `Action needed — delivery option for order ${order.order_ref}`
@@ -101,7 +173,7 @@ export async function POST(request: NextRequest) {
           <p>Dear ${order.first_name},</p>
           <p>
             Unfortunately the location you selected for order <strong>${order.order_ref}</strong>
-            (<em>${order.collection_point_name}, ${order.collection_city}</em>) does not currently have stock available.
+            (<em>${collectionLabel}</em>) does not currently have stock available.
           </p>
           <p>
             We can arrange <strong>delivery</strong> instead. Please <strong>reply to this email</strong> with your

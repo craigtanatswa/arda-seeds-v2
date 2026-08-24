@@ -19,7 +19,7 @@ export const ORDER_STATUS_DESCRIPTIONS: Record<string, string> = {
   awaiting_customer_collection:
     "Stock is not available at your chosen collection point. Please reply to our email to choose another location.",
   awaiting_customer_delivery:
-    "Stock is not available at your chosen collection point. Please reply to our email with your delivery address.",
+    "Please reply to our email with a delivery address so we can complete your order.",
   ready_for_collection: "Your order is ready. Please collect it from your chosen collection point.",
   out_for_delivery: "Your order is on its way to your delivery address.",
   collected: "This order has been collected.",

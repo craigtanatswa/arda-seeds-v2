@@ -31,7 +31,7 @@ const ADMIN_MODULES: AdminModule[] = [
   {
     id: "sales",
     name: "Sales System",
-    description: "Orders, customers, and collection points",
+    description: "Orders, customers, collection points, and delivery",
     href: "/admin/sales",
     icon: <ShoppingCart className="h-8 w-8" />,
   },

@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     mode?: "collection" | "delivery"
     collectionPointId?: string
     deliveryAddress?: string
+    deliveryCity?: string
   }
   try {
     body = await request.json()
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
-  const { orderId, mode, collectionPointId, deliveryAddress } = body
+  const { orderId, mode, collectionPointId, deliveryAddress, deliveryCity } = body
   if (!orderId || !mode) {
     return NextResponse.json({ error: "orderId and mode are required" }, { status: 400 })
   }
@@ -63,16 +64,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "deliveryAddress is required" }, { status: 400 })
   }
 
+  const city = deliveryCity?.trim() || null
   const { error: updateError } = await supabaseServer
     .from("orders")
     .update({
       fulfillment_type: "delivery",
       delivery_address: deliveryAddress.trim(),
-      status: "out_for_delivery",
+      delivery_city: city ?? order.delivery_city ?? null,
+      status: "processing",
       updated_at: new Date().toISOString(),
     })
     .eq("id", orderId)
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
-  return NextResponse.json({ success: true, status: "out_for_delivery" })
+  return NextResponse.json({ success: true, status: "processing" })
 }

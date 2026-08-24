@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Trash2, ShoppingBag, Smartphone, CreditCard, Wallet, QrCode } from "lucide-react"
+import { ArrowLeft, Trash2, ShoppingBag, Smartphone, CreditCard, Wallet, QrCode, Truck, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,10 +19,17 @@ import InnbucksQrCode from "@/components/innbucks-qr-code"
 import { useCart } from "@/lib/cart-context"
 import { groupCollectionPointsByCity } from "@/lib/collection-points"
 import {
+  calculateDeliveryFee,
+  cartWeightKg,
+  parseDeliverySettings,
+  type DeliveryLocation,
+  type DeliverySettings,
+} from "@/lib/delivery"
+import {
   formatInsufficientBalanceMessage,
   isInsufficientBalanceError,
 } from "@/lib/payment-errors"
-import type { CollectionPoint } from "@/lib/types"
+import type { CollectionPoint, OrderFulfillmentType } from "@/lib/types"
 import type { PaynowPaymentMethod, InnBucksPaymentInfo } from "@/lib/paynow"
 
 type Step = "cart" | "details" | "awaiting_payment"
@@ -62,6 +69,12 @@ export default function CartPage() {
   const [phone, setPhone] = useState("")
   const [city, setCity] = useState("")
   const [collectionPointId, setCollectionPointId] = useState("")
+  const [fulfillmentType, setFulfillmentType] = useState<OrderFulfillmentType>("collection")
+  const [deliveryCity, setDeliveryCity] = useState("")
+  const [deliveryAddress, setDeliveryAddress] = useState("")
+  const [deliveryLocations, setDeliveryLocations] = useState<DeliveryLocation[]>([])
+  const [deliverySettings, setDeliverySettings] = useState<DeliverySettings | null>(null)
+  const [deliveryLoading, setDeliveryLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<PaynowPaymentMethod | "">("")
   const [points, setPoints] = useState<CollectionPoint[]>([])
   const [pointsLoading, setPointsLoading] = useState(false)
@@ -99,6 +112,20 @@ export default function CartPage() {
       })
       .catch(() => setPoints([]))
       .finally(() => setPointsLoading(false))
+
+    setDeliveryLoading(true)
+    fetch("/api/delivery-locations")
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "Failed to load delivery cities")
+        setDeliveryLocations((data.locations ?? []) as DeliveryLocation[])
+        setDeliverySettings(parseDeliverySettings(data.settings))
+      })
+      .catch(() => {
+        setDeliveryLocations([])
+        setDeliverySettings(null)
+      })
+      .finally(() => setDeliveryLoading(false))
   }, [step])
 
   useEffect(() => {
@@ -140,7 +167,8 @@ export default function CartPage() {
         if (
           status === "paid" ||
           status === "processing" ||
-          status === "ready_for_collection"
+          status === "ready_for_collection" ||
+          status === "out_for_delivery"
         ) {
           router.replace(`/order/confirmation?ref=${encodeURIComponent(orderRef)}`)
           return
@@ -166,6 +194,24 @@ export default function CartPage() {
     () => cityGroups.find((g) => g.city === city)?.points ?? [],
     [cityGroups, city]
   )
+  const selectedDeliveryLocation = useMemo(
+    () => deliveryLocations.find((location) => location.city === deliveryCity) ?? null,
+    [deliveryLocations, deliveryCity]
+  )
+  const weightKg = useMemo(
+    () => cartWeightKg(items.map((item) => ({ packSize: item.packSize, quantity: item.quantity }))),
+    [items]
+  )
+  const deliveryQuote = useMemo(() => {
+    if (fulfillmentType !== "delivery" || !selectedDeliveryLocation || !deliverySettings) return null
+    return calculateDeliveryFee({
+      distanceKm: Number(selectedDeliveryLocation.distance_km),
+      weightKg,
+      city: selectedDeliveryLocation.city,
+      settings: deliverySettings,
+    })
+  }, [fulfillmentType, selectedDeliveryLocation, deliverySettings, weightKg])
+  const grandTotal = Number((total + (deliveryQuote?.fee ?? 0)).toFixed(2))
 
   function validateDetails() {
     const e: Record<string, string> = {}
@@ -174,8 +220,13 @@ export default function CartPage() {
     if (!email.trim()) e.email = "Email is required."
     else if (!EMAIL_REGEX.test(email)) e.email = "Please enter a valid email address."
     if (!phone.trim()) e.phone = "Phone number is required."
-    if (!city) e.city = "Please select a city."
-    if (!collectionPointId) e.collectionPointId = "Please select a collection point."
+    if (fulfillmentType === "collection") {
+      if (!city) e.city = "Please select a city."
+      if (!collectionPointId) e.collectionPointId = "Please select a collection point."
+    } else {
+      if (!deliveryCity) e.deliveryCity = "Please select a delivery city."
+      if (!deliveryAddress.trim()) e.deliveryAddress = "Please enter a delivery address."
+    }
     if (!paymentMethod) e.paymentMethod = "Please choose a payment method."
     setErrors(e)
     return Object.keys(e).length === 0
@@ -195,7 +246,10 @@ export default function CartPage() {
           lastName,
           email,
           phone,
-          collectionPointId,
+          fulfillmentType,
+          collectionPointId: fulfillmentType === "collection" ? collectionPointId : undefined,
+          deliveryCity: fulfillmentType === "delivery" ? deliveryCity : undefined,
+          deliveryAddress: fulfillmentType === "delivery" ? deliveryAddress : undefined,
           paymentMethod,
           items: items.map((item) => ({
             productId: item.productId,
@@ -211,7 +265,7 @@ export default function CartPage() {
 
       if (data.mode === "express") {
         setOrderRef(data.orderRef as string)
-        setAwaitingTotal(total)
+        setAwaitingTotal(grandTotal)
         setPaymentInstructions(
           (data.instructions as string) ||
             "Approve the payment prompt on your phone to complete the order."
@@ -229,7 +283,7 @@ export default function CartPage() {
       const message =
         err instanceof Error ? err.message : "Something went wrong. Please try again."
       if (isInsufficientBalanceError(message)) {
-        showInsufficientBalanceModal(paymentMethod, total, message)
+        showInsufficientBalanceModal(paymentMethod, grandTotal, message)
       } else {
         setSubmitError(message)
       }
@@ -383,8 +437,8 @@ export default function CartPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
           <h1 className="text-2xl font-bold mb-2">Checkout</h1>
           <p className="text-sm text-gray-500 mb-6">
-            Choose your collection point and payment method. EcoCash and InnBucks stay on this site
-            — no Paynow login page.
+            Choose collect or deliver, then pay with EcoCash, InnBucks, or card. EcoCash and InnBucks
+            stay on this site — no Paynow login page.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -438,6 +492,50 @@ export default function CartPage() {
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </div>
 
+          <div className="mb-6">
+            <Label className="mb-3 block text-sm font-medium text-gray-900">
+              How should we get your order to you? *
+            </Label>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFulfillmentType("collection")}
+                className={`flex items-start gap-3 rounded-xl border-2 bg-white p-4 text-left shadow-sm transition-colors ${
+                  fulfillmentType === "collection"
+                    ? "border-green-700"
+                    : "border-gray-200 hover:border-green-300"
+                }`}
+              >
+                <MapPin className="h-5 w-5 mt-0.5 text-green-700 shrink-0" />
+                <span>
+                  <span className="block font-semibold text-gray-900">Collection</span>
+                  <span className="block text-sm text-gray-500">
+                    Collect from a convenient location
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFulfillmentType("delivery")}
+                className={`flex items-start gap-3 rounded-xl border-2 bg-white p-4 text-left shadow-sm transition-colors ${
+                  fulfillmentType === "delivery"
+                    ? "border-green-700"
+                    : "border-gray-200 hover:border-green-300"
+                }`}
+              >
+                <Truck className="h-5 w-5 mt-0.5 text-green-700 shrink-0" />
+                <span>
+                  <span className="block font-semibold text-gray-900">Delivery</span>
+                  <span className="block text-sm text-gray-500">
+                    Have your order delivered to your address
+                  </span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {fulfillmentType === "collection" ? (
+            <>
           <div className="mb-4">
             <Label htmlFor="city">Collection city *</Label>
             <select
@@ -487,6 +585,58 @@ export default function CartPage() {
               <p className="text-red-500 text-xs mt-1">{errors.collectionPointId}</p>
             )}
           </div>
+            </>
+          ) : (
+            <>
+              {!deliveryLoading && deliveryLocations.length === 0 && (
+                <p className="text-sm text-amber-700 mb-4">
+                  Delivery cities are not available yet. Please choose Collect, or ask sales to seed
+                  delivery locations.
+                </p>
+              )}
+              <div className="mb-4">
+                <Label htmlFor="deliveryCity">Delivery city *</Label>
+                <select
+                  id="deliveryCity"
+                  value={deliveryCity}
+                  disabled={deliveryLoading}
+                  onChange={(e) => setDeliveryCity(e.target.value)}
+                  className={`mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm ${
+                    errors.deliveryCity ? "border-red-500" : ""
+                  }`}
+                >
+                  <option value="">
+                    {deliveryLoading ? "Loading cities…" : "Select a city"}
+                  </option>
+                  {deliveryLocations.map((location) => (
+                    <option key={location.id} value={location.city}>
+                      {location.city} — {Number(location.distance_km).toFixed(0)} km
+                    </option>
+                  ))}
+                </select>
+                {errors.deliveryCity && (
+                  <p className="text-red-500 text-xs mt-1">{errors.deliveryCity}</p>
+                )}
+              </div>
+              <div className="mb-6">
+                <Label htmlFor="deliveryAddress">Delivery address *</Label>
+                <Input
+                  id="deliveryAddress"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder="Street, farm, or stand number"
+                  className={`mt-1 ${errors.deliveryAddress ? "border-red-500" : ""}`}
+                />
+                {errors.deliveryAddress && (
+                  <p className="text-red-500 text-xs mt-1">{errors.deliveryAddress}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Delivery is calculated from ARDA Head Office, Harare, using your cart weight and
+                  the selected city’s road distance.
+                </p>
+              </div>
+            </>
+          )}
 
           <div className="mb-6">
             <Label className="mb-2 block">Payment method *</Label>
@@ -539,9 +689,22 @@ export default function CartPage() {
                 <span>US$ {(item.pricePerUnit * item.quantity).toFixed(2)}</span>
               </div>
             ))}
+            {fulfillmentType === "delivery" && (
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>
+                  Delivery
+                  {deliveryQuote
+                    ? ` (${deliveryQuote.weightKg} kg · ${deliveryQuote.distanceKm} km)`
+                    : ""}
+                </span>
+                <span>
+                  {deliveryQuote ? `US$ ${deliveryQuote.fee.toFixed(2)}` : "Select a city"}
+                </span>
+              </div>
+            )}
             <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between font-bold text-gray-800">
               <span>Total</span>
-              <span>US$ {total.toFixed(2)}</span>
+              <span>US$ {grandTotal.toFixed(2)}</span>
             </div>
           </div>
 
@@ -549,7 +712,7 @@ export default function CartPage() {
 
           <Button
             onClick={handlePayAndOrder}
-            disabled={submitting || pointsLoading}
+            disabled={submitting || pointsLoading || deliveryLoading}
             className="w-full h-12 text-base bg-green-700 hover:bg-green-800 font-semibold"
           >
             {submitting
@@ -632,8 +795,8 @@ export default function CartPage() {
       </div>
 
       <p className="text-xs text-gray-400 mb-6">
-        Orders are sold in catalogue pack sizes only. At checkout you choose EcoCash, InnBucks, or
-        card.
+        Orders are sold in catalogue pack sizes only. At checkout you choose collect or deliver, then
+        EcoCash, InnBucks, or card.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3">

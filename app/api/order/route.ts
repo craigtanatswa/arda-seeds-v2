@@ -10,13 +10,24 @@ import {
 } from "@/lib/paynow"
 import { generateInnbucksQrDataUrl } from "@/lib/innbucks-qr"
 import { ensureCollectionPointsSeeded } from "@/lib/ensure-collection-points-seed"
+import { ensureDeliverySeeded } from "@/lib/ensure-delivery-seed"
+import {
+  calculateDeliveryFee,
+  cartWeightKg,
+  formatDeliveryAddress,
+  parseDeliverySettings,
+} from "@/lib/delivery"
+import type { OrderFulfillmentType } from "@/lib/types"
 
 interface OrderBody {
   firstName: string
   lastName: string
   email: string
   phone: string
-  collectionPointId: string
+  fulfillmentType?: OrderFulfillmentType
+  collectionPointId?: string
+  deliveryCity?: string
+  deliveryAddress?: string
   paymentMethod: PaynowPaymentMethod
   items: { productId: string; packSize: string; quantity: number }[]
 }
@@ -32,12 +43,11 @@ export async function POST(req: NextRequest) {
     const body: OrderBody = await req.json()
     const { firstName, lastName, email, phone, collectionPointId, items } = body
     const paymentMethod = body.paymentMethod
+    const fulfillmentType: OrderFulfillmentType =
+      body.fulfillmentType === "delivery" ? "delivery" : "collection"
 
     if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !phone?.trim()) {
       return NextResponse.json({ error: "All customer fields are required." }, { status: 400 })
-    }
-    if (!collectionPointId) {
-      return NextResponse.json({ error: "Please select a collection point." }, { status: 400 })
     }
     if (!paymentMethod || !["ecocash", "innbucks", "card"].includes(paymentMethod)) {
       return NextResponse.json(
@@ -52,19 +62,72 @@ export async function POST(req: NextRequest) {
     }
 
     await ensureCollectionPointsSeeded()
+    await ensureDeliverySeeded()
 
-    const { data: point, error: pointError } = await supabaseServer
-      .from("collection_points")
-      .select("*")
-      .eq("id", collectionPointId)
-      .eq("is_active", true)
-      .single()
+    let collectionPoint: {
+      id: string
+      name: string
+      city: string
+      address: string | null
+    } | null = null
+    let deliveryQuote: ReturnType<typeof calculateDeliveryFee> | null = null
+    let deliveryAddress: string | null = null
+    let deliveryCity: string | null = null
 
-    if (pointError || !point) {
-      return NextResponse.json(
-        { error: "Selected collection point is not available. Please choose another location." },
-        { status: 400 }
-      )
+    if (fulfillmentType === "collection") {
+      if (!collectionPointId) {
+        return NextResponse.json({ error: "Please select a collection point." }, { status: 400 })
+      }
+
+      const { data: point, error: pointError } = await supabaseServer
+        .from("collection_points")
+        .select("*")
+        .eq("id", collectionPointId)
+        .eq("is_active", true)
+        .single()
+
+      if (pointError || !point) {
+        return NextResponse.json(
+          { error: "Selected collection point is not available. Please choose another location." },
+          { status: 400 }
+        )
+      }
+      collectionPoint = point
+    } else {
+      const city = body.deliveryCity?.trim() ?? ""
+      const street = body.deliveryAddress?.trim() ?? ""
+      if (!city) {
+        return NextResponse.json({ error: "Please select a delivery city." }, { status: 400 })
+      }
+      if (!street) {
+        return NextResponse.json({ error: "Please enter a delivery address." }, { status: 400 })
+      }
+
+      const [{ data: location, error: locationError }, { data: settingsRow }] = await Promise.all([
+        supabaseServer
+          .from("delivery_locations")
+          .select("*")
+          .eq("city", city)
+          .eq("is_active", true)
+          .single(),
+        supabaseServer.from("delivery_settings").select("*").eq("id", true).maybeSingle(),
+      ])
+
+      if (locationError || !location) {
+        return NextResponse.json(
+          { error: "Delivery is not available for the selected city. Please choose another city." },
+          { status: 400 }
+        )
+      }
+
+      deliveryQuote = calculateDeliveryFee({
+        distanceKm: Number(location.distance_km),
+        weightKg: cartWeightKg(validated.lines.map((line) => ({ packSize: line.packSize, quantity: line.quantity }))),
+        city: location.city,
+        settings: parseDeliverySettings(settingsRow),
+      })
+      deliveryCity = location.city
+      deliveryAddress = formatDeliveryAddress(street, location.city)
     }
 
     const orderRef = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
@@ -89,6 +152,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to save customer details." }, { status: 500 })
     }
 
+    const deliveryFee = deliveryQuote?.fee ?? 0
+    const grandTotal = Number((validated.total + deliveryFee).toFixed(2))
+
     const { data: order, error: orderError } = await supabaseServer
       .from("orders")
       .insert({
@@ -98,12 +164,18 @@ export async function POST(req: NextRequest) {
         last_name: lastName.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
-        fulfillment_type: "collection",
-        collection_point_id: point.id,
-        collection_point_name: point.name,
-        collection_city: point.city,
-        collection_address: point.address,
-        total_usd: validated.total,
+        fulfillment_type: fulfillmentType,
+        collection_point_id: collectionPoint?.id ?? null,
+        collection_point_name: collectionPoint?.name ?? null,
+        collection_city: collectionPoint?.city ?? null,
+        collection_address: collectionPoint?.address ?? null,
+        delivery_address: deliveryAddress,
+        delivery_city: deliveryCity,
+        delivery_fee_usd: deliveryFee,
+        delivery_distance_km: deliveryQuote?.distanceKm ?? null,
+        delivery_weight_kg: deliveryQuote?.weightKg ?? null,
+        subtotal_usd: validated.total,
+        total_usd: grandTotal,
         status: "pending_payment",
       })
       .select("*")
@@ -145,6 +217,13 @@ export async function POST(req: NextRequest) {
 
     for (const line of validated.lines) {
       payment.add(`${line.productName} (${line.packSize})`, line.unitPrice, line.quantity)
+    }
+    if (deliveryQuote && deliveryFee > 0) {
+      payment.add(
+        `Delivery to ${deliveryQuote.city} (${deliveryQuote.weightKg} kg, ${deliveryQuote.distanceKm} km)`,
+        deliveryFee,
+        1
+      )
     }
 
     if (isExpress) {

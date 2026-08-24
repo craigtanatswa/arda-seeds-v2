@@ -19,6 +19,8 @@ type OrderWithItems = {
   collection_address: string | null
   fulfillment_type: string | null
   delivery_address: string | null
+  delivery_fee_usd?: number | null
+  subtotal_usd?: number | null
   paid_at: string | null
   receipt_path: string | null
   order_items?: Array<{
@@ -52,6 +54,8 @@ function toReceiptInput(order: OrderWithItems): OrderReceiptInput {
     collectionAddress: order.collection_address,
     fulfillmentType: order.fulfillment_type ?? "collection",
     deliveryAddress: order.delivery_address,
+    deliveryFee: Number(order.delivery_fee_usd ?? 0),
+    subtotal: Number(order.subtotal_usd ?? order.total_usd),
     lines,
     total: Number(order.total_usd),
     paidAt: order.paid_at,
@@ -90,7 +94,7 @@ export async function ensureOrderReceipt(orderId: string): Promise<Uint8Array | 
   const { data: order, error } = await supabaseServer
     .from("orders")
     .select(
-      "id, order_ref, status, total_usd, first_name, last_name, email, phone, collection_point_name, collection_city, collection_address, fulfillment_type, delivery_address, paid_at, receipt_path, order_items(product_id, product_name, pack_size, quantity, unit_price, line_total)"
+      "id, order_ref, status, total_usd, first_name, last_name, email, phone, collection_point_name, collection_city, collection_address, fulfillment_type, delivery_address, delivery_fee_usd, subtotal_usd, paid_at, receipt_path, order_items(product_id, product_name, pack_size, quantity, unit_price, line_total)"
     )
     .eq("id", orderId)
     .single()

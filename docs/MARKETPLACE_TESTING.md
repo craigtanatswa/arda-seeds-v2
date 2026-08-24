@@ -4,8 +4,9 @@ Use this checklist after deploying the migration and env vars.
 
 ## 0. Prerequisites
 
-1. Run the Supabase migration  
+1. Run the Supabase migrations  
    `supabase/migrations/20250716000000_sales_orders.sql`  
+   `supabase/migrations/20250824000000_checkout_delivery.sql`  
    (Supabase SQL editor or `supabase db push`).
 2. Set environment variables (local `.env.local` and/or Vercel):
    - `PAYNOW_INTEGRATION_ID`
@@ -48,7 +49,9 @@ Use this checklist after deploying the migration and env vars.
      - `0774444444` — insufficient balance
    - **InnBucks:** uses authorization code + QR code in the InnBucks app (no EcoCash simulator numbers).
    - `PAYNOW_AUTH_EMAIL` must be your Paynow merchant login email (already set if working past the authemail error).
-6. Select a **city**, then a **collection point**.
+6. Choose **Collect** or **Deliver**.
+   - Collect: select a **city**, then a **collection point**.
+   - Deliver: select a **delivery city**, enter a street/farm address, and confirm the delivery fee (weight + distance from Harare) is added to the total.
 7. Choose a **payment method** on the site:
    - **EcoCash** → use a test number above (simulator; no real EcoCash prompt).
    - **InnBucks** → you receive an authorization code and QR code; pay in the InnBucks app (must be enabled on Paynow integration — see below).
@@ -70,7 +73,21 @@ Use this checklist after deploying the migration and env vars.
 
 **Negative checks:**
 - Crafted API call with invalid pack size / custom amount should return 400.
-- Checkout without collection point or payment method should fail validation.
+- Checkout without collection point (collect) or delivery city/address (deliver) or payment method should fail validation.
+
+---
+
+## Flow A2 — Seed delivery cities and rates
+
+1. Log in as super admin or sales admin → `/admin/sales/delivery-locations`.
+2. Click **Seed defaults** (or open checkout once — first delivery API load also seeds if empty).
+3. Confirm Zimbabwe cities appear with a distance from Harare.
+4. **Deactivate** one city → it should disappear from the checkout Deliver city list.
+5. **Activate** it again → it returns.
+6. Change a rate (base / per km / per kg / minimum) → **Save rates**.
+7. **Add city** with a custom distance → appears when active.
+
+**Pass:** Active delivery cities and rates are manageable; inactive cities stay in admin but not at checkout.
 
 ---
 
@@ -78,10 +95,10 @@ Use this checklist after deploying the migration and env vars.
 
 1. Log in as `admin_sales` → `/admin/sales`.
 2. Open the paid order from Flow B.
-3. Click **Order is ready** → confirm.
-4. Status becomes `ready_for_collection`.
-5. Customer receives “ready for collection” email with depot name/address.
-6. Click **Mark as collected** → status `collected`.
+3. Click **Order is ready** (collection) or **Out for delivery** (delivery) → confirm.
+4. Status becomes `ready_for_collection` or `out_for_delivery`.
+5. Customer receives the matching email.
+6. Click **Mark as collected** / **Mark as delivered**.
 
 **Pass:** Notify email + status transitions work.
 
@@ -101,16 +118,28 @@ Use this checklist after deploying the migration and env vars.
 
 ---
 
-## Flow E — Out of stock → delivery
+## Flow E — Out of stock → delivery (from a collection order)
 
-1. On another paid order, click **OOS — needs delivery address**.
+1. On another paid **collection** order, click **OOS — needs delivery address**.
 2. Status → `awaiting_customer_delivery`.
 3. Customer email asks for a delivery address (reply to sales inbox).
 4. Paste the address into **Apply customer reply** → **Apply delivery address**.
-5. Status → `out_for_delivery`; fulfillment type → delivery.
-6. Mark as **delivered**.
+5. Status → `processing`; fulfillment type → delivery.
+6. Click **Out for delivery**, then mark as **delivered**.
 
-**Pass:** Delivery is only possible via this admin path, not at checkout.
+**Pass:** Collection orders can still be switched to delivery after an OOS email.
+
+---
+
+## Flow E2 — Delivery order: new address or switch to collection
+
+1. Place a paid **delivery** checkout order.
+2. On the order page, click **Cannot deliver — new address** → customer is asked for a new address.
+3. Apply the new address → status `processing`.
+4. Alternatively, click **Cannot deliver — offer collection** → customer is sent the active collection-point list.
+5. Apply a collection point → fulfillment type becomes collection.
+
+**Pass:** Delivery orders have the same notify / apply / complete actions as collection, in delivery wording.
 
 ---
 
@@ -141,6 +170,7 @@ Use this checklist after deploying the migration and env vars.
 |--------|--------|
 | “Paynow is not configured” | Env vars + restart |
 | Empty collection cities | Run Seed defaults / migration applied |
+| Empty delivery cities | Run Seed defaults on Delivery admin / `20250824000000_checkout_delivery.sql` applied |
 | Order created but no email | SMTP vars; Paynow result must mark paid |
 | Confirmation stuck on pending | Poll URL / resulturl reachable; check order `paynow_status` in DB |
 | Sales admin empty tables | Migration not applied; RLS role not `admin_sales` |

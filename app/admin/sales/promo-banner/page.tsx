@@ -1,23 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { supabase } from "@/lib/supabaseClient"
-import { useAdminRole } from "@/lib/hooks/use-admin-role"
 import { PromoBannerPreview } from "@/components/admin/promo-banner-preview"
 import { useNotification } from "@/components/notification-provider"
+import { SalesAdminNav } from "@/components/admin/sales-admin-nav"
 import type { HomepagePromoBannerItem, HomepagePromoBannerSettings } from "@/lib/types"
 import { revalidateHomepage } from "@/lib/revalidate-homepage"
-import { ArrowDown, ArrowUp, LogOut, Megaphone, Plus } from "lucide-react"
+import { ArrowDown, ArrowUp, Megaphone, Plus } from "lucide-react"
 
 export default function PromoBannerAdminPage() {
-  const router = useRouter()
-  const userRole = useAdminRole()
   const { alert, confirm } = useNotification()
   const [settings, setSettings] = useState<HomepagePromoBannerSettings | null>(null)
   const [items, setItems] = useState<HomepagePromoBannerItem[]>([])
@@ -158,42 +154,9 @@ export default function PromoBannerAdminPage() {
     else await refreshAfterChange()
   }
 
-  const handleSignOut = async () => {
-    await supabase?.auth.signOut()
-    router.replace("/admin/login")
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="text-green-700 font-semibold">
-              ARDA Seeds
-            </Link>
-            {userRole === "admin" && (
-              <Link href="/admin" className="text-gray-600 text-sm">
-                Dashboard
-              </Link>
-            )}
-            <Link href="/admin/sales" className="text-gray-600 text-sm">
-              Orders
-            </Link>
-            <Link href="/admin/sales/customers" className="text-gray-600 text-sm">
-              Customers
-            </Link>
-            <Link href="/admin/sales/collection-points" className="text-gray-600 text-sm">
-              Collection points
-            </Link>
-            <Link href="/admin/sales/promo-banner" className="text-gray-900 font-medium">
-              Promo banner
-            </Link>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" /> Sign out
-          </Button>
-        </div>
-      </header>
+      <SalesAdminNav current="promo-banner" />
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

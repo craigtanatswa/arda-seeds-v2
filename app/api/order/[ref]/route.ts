@@ -29,7 +29,7 @@ export async function GET(
     const { data: order, error } = await supabaseServer
       .from("orders")
       .select(
-        "order_ref, status, total_usd, first_name, collection_point_name, collection_city, collection_address, fulfillment_type, delivery_address, paid_at, paynow_poll_url, paynow_status, confirmation_email_sent, order_items(product_name, pack_size, quantity, unit_price, line_total)"
+        "order_ref, status, total_usd, first_name, collection_point_name, collection_city, collection_address, fulfillment_type, delivery_address, delivery_city, delivery_fee_usd, subtotal_usd, paid_at, paynow_poll_url, paynow_status, confirmation_email_sent, order_items(product_id, product_name, pack_size, quantity, unit_price, line_total)"
       )
       .eq("order_ref", orderRef)
       .single()
@@ -105,9 +105,14 @@ export async function GET(
                 lastName: full.last_name,
                 email: full.email,
                 phone: full.phone,
+                fulfillmentType: full.fulfillment_type ?? "collection",
                 collectionName: full.collection_point_name ?? "Collection point",
                 collectionCity: full.collection_city ?? "",
                 collectionAddress: full.collection_address,
+                deliveryAddress: full.delivery_address,
+                deliveryCity: full.delivery_city,
+                deliveryFee: Number(full.delivery_fee_usd ?? 0),
+                subtotal: Number(full.subtotal_usd ?? full.total_usd),
                 lines,
                 total: Number(full.total_usd),
               })
