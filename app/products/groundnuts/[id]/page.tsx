@@ -5,11 +5,12 @@ import { ArrowLeft } from 'lucide-react';
 import { Badge } from "@/components/ui/badge"
 
 interface ProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function GroundnutProductPage({ params }: ProductPageProps) {
-  const product = groundnutProducts.find(p => p.id === params.id);
+export default async function GroundnutProductPage({ params }: ProductPageProps) {
+  const { id } = await params;
+  const product = groundnutProducts.find(p => p.id === id);
 
   if (!product) {
     notFound();

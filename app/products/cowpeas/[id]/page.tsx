@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import { Bean } from 'lucide-react';
 
 interface ProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function CowpeaProductPage({ params }: ProductPageProps) {
-  const product = cowpeaProducts.find(p => p.id === params.id);
+export default async function CowpeaProductPage({ params }: ProductPageProps) {
+  const { id } = await params;
+  const product = cowpeaProducts.find(p => p.id === id);
 
   if (!product) {
     notFound();

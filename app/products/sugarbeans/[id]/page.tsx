@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import { Bean } from 'lucide-react';
 
 interface ProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function SugarBeanProductPage({ params }: ProductPageProps) {
-  const product = sugarBeanProducts.find(p => p.id === params.id);
+export default async function SugarBeanProductPage({ params }: ProductPageProps) {
+  const { id } = await params;
+  const product = sugarBeanProducts.find(p => p.id === id);
 
   if (!product) {
     notFound();

@@ -8,13 +8,14 @@ import { CheckCircle2, ArrowLeft } from "lucide-react"
 import { findProduct, resolveProductId } from "@/lib/product-data"
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = findProduct(params.id)
+  const { id } = await params
+  const product = findProduct(id)
 
   if (!product) {
     return {
@@ -28,13 +29,14 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const resolvedId = resolveProductId(params.id)
-  if (resolvedId !== params.id) {
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { id } = await params
+  const resolvedId = resolveProductId(id)
+  if (resolvedId !== id) {
     redirect(`/products/maize/${resolvedId}`)
   }
 
-  const product = findProduct(params.id)
+  const product = findProduct(id)
 
   if (!product) {
     notFound()

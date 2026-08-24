@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import { Wheat } from 'lucide-react';
 
 interface ProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function SorghumProductPage({ params }: ProductPageProps) {
-  const product = sorghumProducts.find(p => p.id === params.id);
+export default async function SorghumProductPage({ params }: ProductPageProps) {
+  const { id } = await params;
+  const product = sorghumProducts.find(p => p.id === id);
 
   if (!product) {
     notFound();

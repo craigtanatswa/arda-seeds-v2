@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import { Sun } from 'lucide-react';
 
 interface ProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function SunflowerProductPage({ params }: ProductPageProps) {
-  const product = sunflowerProducts.find(p => p.id === params.id);
+export default async function SunflowerProductPage({ params }: ProductPageProps) {
+  const { id } = await params;
+  const product = sunflowerProducts.find(p => p.id === id);
 
   if (!product) {
     notFound();
