@@ -320,8 +320,9 @@ export default function AboutPage() {
                     </div>
                     <h3 className="text-2xl font-semibold mb-4 text-center">Mission</h3>
                     <p className="text-gray-700 text-center leading-relaxed">
-                      To enhance agricultural productivity and food security by providing farmers with high-quality,
-                      innovative seed solutions and agronomic support.
+                      To empower farmers in Zimbabwe and beyond to thrive amid climate challenges through production
+                      of climate smart seed varieties that boost food security, conserve resources and uplift
+                      communities.
                     </p>
                   </CardContent>
                 </Card>
@@ -336,8 +337,7 @@ export default function AboutPage() {
                     </div>
                     <h3 className="text-2xl font-semibold mb-4 text-center">Vision</h3>
                     <p className="text-gray-700 text-center leading-relaxed">
-                      To be the leading seed company in Zimbabwe and beyond, recognized for excellence in product
-                      quality, innovation, and customer service.
+                      Guaranteeing national seed security and production of climate smart seed varieties by 2030.
                     </p>
                   </CardContent>
                 </Card>
