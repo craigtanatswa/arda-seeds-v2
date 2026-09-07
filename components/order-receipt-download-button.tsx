@@ -8,16 +8,17 @@ import { useNotification } from "@/components/notification-provider"
 type Props = {
   orderRef: string
   className?: string
+  downloadUrl?: string
 }
 
-export default function OrderReceiptDownloadButton({ orderRef, className }: Props) {
+export default function OrderReceiptDownloadButton({ orderRef, className, downloadUrl }: Props) {
   const [loading, setLoading] = useState(false)
   const { alert } = useNotification()
 
   const handleDownload = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/order/${encodeURIComponent(orderRef)}/receipt`)
+      const res = await fetch(downloadUrl ?? `/api/order/${encodeURIComponent(orderRef)}/receipt`)
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         await alert(err?.error ?? "Download failed", "Error")
