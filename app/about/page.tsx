@@ -310,7 +310,7 @@ export default function AboutPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center decorative-line">
                 Our Mission & Values
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
                 <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50" style={{ animationDelay: '0.1s' }}>
                   <CardContent className="pt-8 pb-8 px-6">
                     <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
@@ -341,37 +341,53 @@ export default function AboutPage() {
                     </p>
                   </CardContent>
                 </Card>
+              </div>
 
-                <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50" style={{ animationDelay: '0.3s' }}>
-                  <CardContent className="pt-8 pb-8 px-6">
-                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-semibold mb-4 text-center">Values</h3>
-                    <ul className="text-gray-700 space-y-2">
-                      <li className="flex items-start">
-                        <span className="text-green-600 mr-2">✓</span>
-                        <span>Integrity in all our dealings</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="text-green-600 mr-2">✓</span>
-                        <span>Commitment to quality and excellence</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="text-green-600 mr-2">✓</span>
-                        <span>Innovation in product development</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="text-green-600 mr-2">✓</span>
-                        <span>Sustainability in farming practices</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="text-green-600 mr-2">✓</span>
-                        <span>Customer-centric approach</span>
-                      </li>
-                    </ul>
+              <h3 className="text-2xl md:text-3xl font-bold mb-8 text-center">Core Values</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50">
+                  <CardContent className="pt-6 pb-6 px-6">
+                    <h4 className="text-lg font-semibold mb-2 text-green-700">Accountability</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      We are committed to take ownership of our decisions, actions and results across the entire
+                      value chain.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50">
+                  <CardContent className="pt-6 pb-6 px-6">
+                    <h4 className="text-lg font-semibold mb-2 text-green-700">Quality</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      We deliver top notch seed through efficient systems.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50">
+                  <CardContent className="pt-6 pb-6 px-6">
+                    <h4 className="text-lg font-semibold mb-2 text-green-700">Integrity</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      We operate with honesty and transparency upholding ethical principles in all our operations.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50">
+                  <CardContent className="pt-6 pb-6 px-6">
+                    <h4 className="text-lg font-semibold mb-2 text-green-700">Commitment</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      We are dedicated in our service delivery to achieve client and stakeholder satisfaction.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="card-hover border-0 shadow-lg bg-gradient-to-br from-white to-stone-50 md:col-span-2 lg:col-span-1">
+                  <CardContent className="pt-6 pb-6 px-6">
+                    <h4 className="text-lg font-semibold mb-2 text-green-700">Teamwork</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      We leverage each other&apos;s strengths to achieve our organisational objectives.
+                    </p>
                   </CardContent>
                 </Card>
               </div>
