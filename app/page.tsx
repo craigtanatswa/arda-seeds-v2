@@ -338,7 +338,7 @@ export default async function Home() {
             <ScrollFlyIn delay={0.1} className="h-full">
               <div className="testimonial-card h-full">
                 <TestimonialCard
-                  quote="The technical support from ARDA's agronomists has been invaluable for improving my farming practices and increasing productivity."
+                  quote="The technical support from ARDA Seeds' agronomists has been invaluable for improving my farming practices and increasing productivity."
                   author="Sarah Mutasa"
                   role="Smallholder Farmer, Manicaland"
                 />
@@ -347,7 +347,7 @@ export default async function Home() {
             <ScrollFlyIn delay={0.2} className="h-full">
               <div className="testimonial-card h-full">
                 <TestimonialCard
-                  quote="I've been using ARDA's soybean seeds for five years now and the quality is always outstanding. Highly recommended!"
+                  quote="I've been using ARDA Seeds' soybean seeds for five years now and the quality is always outstanding. Highly recommended!"
                   author="David Ncube"
                   role="Farm Manager, Midlands"
                 />

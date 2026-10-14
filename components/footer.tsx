@@ -1,7 +1,12 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react"
-import { COMPANY_ADDRESS_FULL } from "@/lib/site"
+import {
+  COMPANY_ADDRESS_FULL,
+  COMPANY_EMAIL,
+  COMPANY_PHONE_MOBILE,
+  COMPANY_PHONE_TOLL_FREE,
+} from "@/lib/site"
 
 export default function Footer() {
   return (
@@ -122,12 +127,14 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>086 125 588 | +263 71 149 6082</span>
+                <span>
+                  {COMPANY_PHONE_TOLL_FREE} | {COMPANY_PHONE_MOBILE}
+                </span>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 flex-shrink-0" />
-                <Link href="mailto:customerexperience@ardaseeds.co.zw" className="hover:text-green-400">
-                  customerexperience@ardaseeds.co.zw
+                <Link href={`mailto:${COMPANY_EMAIL}`} className="hover:text-green-400">
+                  {COMPANY_EMAIL}
                 </Link>
               </li>
             </ul>

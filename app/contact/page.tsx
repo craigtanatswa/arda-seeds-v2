@@ -1,7 +1,16 @@
 import type { Metadata } from "next"
 import ContactForm from "@/components/contact-form"
 import { MapPin, Phone, Mail, Clock, Building2, Users } from "lucide-react"
-import { COMPANY_ADDRESS, COMPANY_ADDRESS_FULL } from "@/lib/site"
+import {
+  COMPANY_ADDRESS,
+  COMPANY_ADDRESS_FULL,
+  COMPANY_EMAIL,
+  COMPANY_HOURS_SATURDAY,
+  COMPANY_HOURS_SUNDAY,
+  COMPANY_HOURS_WEEKDAY,
+  COMPANY_PHONE_MOBILE,
+  COMPANY_PHONE_TOLL_FREE,
+} from "@/lib/site"
 import "./contact-styles.css"
 
 export const metadata: Metadata = {
@@ -75,8 +84,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-lg mb-1">Phone</p>
-                    <p className="text-gray-600">086 125 588</p>
-                    <p className="text-gray-600">+263 71 149 6082</p>
+                    <p className="text-gray-600">{COMPANY_PHONE_TOLL_FREE}</p>
+                    <p className="text-gray-600">{COMPANY_PHONE_MOBILE}</p>
                   </div>
                 </div>
 
@@ -86,7 +95,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-lg mb-1">Email</p>
-                    <p className="text-gray-600">customerexperience@ardaseeds.co.zw</p>
+                    <p className="text-gray-600">{COMPANY_EMAIL}</p>
                   </div>
                 </div>
 
@@ -96,9 +105,9 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-lg mb-1">Business Hours</p>
-                    <p className="text-gray-600">Monday - Friday: 8:00 AM - 5:00 PM</p>
-                    <p className="text-gray-600">Saturday: 8:00 AM - 12:00 PM</p>
-                    <p className="text-gray-600">Sunday: Closed</p>
+                    <p className="text-gray-600">{COMPANY_HOURS_WEEKDAY}</p>
+                    <p className="text-gray-600">{COMPANY_HOURS_SATURDAY}</p>
+                    <p className="text-gray-600">{COMPANY_HOURS_SUNDAY}</p>
                   </div>
                 </div>
               </div>

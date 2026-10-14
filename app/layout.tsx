@@ -5,6 +5,7 @@ import "./globals.css"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { AppProviders } from "@/components/app-providers"
+import { ChatWidget } from "@/components/chat-widget"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -27,6 +28,7 @@ export default function RootLayout({
           <Header />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <ChatWidget />
         </AppProviders>
       </body>
     </html>
