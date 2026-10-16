@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model,
         temperature: 0.3,
-        max_tokens: 500,
+        max_tokens: 700,
         messages: [
           { role: "system", content: buildChatSystemPrompt(lastUser.content) },
           ...messages,

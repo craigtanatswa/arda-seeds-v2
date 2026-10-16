@@ -5,6 +5,9 @@ export const COMPANY_PHONE_TOLL_FREE = "086 125 588"
 export const COMPANY_PHONE_MOBILE = "+263 71 149 6082"
 export const COMPANY_EMAIL = "customerexperience@ardaseeds.co.zw"
 
+export const COMPANY_FACTORY_WAREHOUSE =
+  "ARDA Seeds has a Factory and Warehouse in Chitungwiza where customers can also buy seed in person."
+
 export const COMPANY_HOURS_WEEKDAY = "Monday - Friday: 8:00 AM - 5:00 PM"
 export const COMPANY_HOURS_SATURDAY = "Saturday: 8:00 AM - 12:00 PM"
 export const COMPANY_HOURS_SUNDAY = "Sunday: Closed"

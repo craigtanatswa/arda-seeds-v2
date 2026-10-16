@@ -1,8 +1,10 @@
 import { allProducts } from "@/lib/product-data"
 import { services } from "@/lib/service-data"
+import { retrieveAgronomyContext } from "@/lib/chat-agronomy"
 import {
   COMPANY_ADDRESS_FULL,
   COMPANY_EMAIL,
+  COMPANY_FACTORY_WAREHOUSE,
   COMPANY_HOURS_SATURDAY,
   COMPANY_HOURS_SUNDAY,
   COMPANY_HOURS_WEEKDAY,
@@ -105,9 +107,10 @@ function companyFacts(): string {
     `Sales phones: ${COMPANY_PHONE_TOLL_FREE} and ${COMPANY_PHONE_MOBILE}`,
     `Email: ${COMPANY_EMAIL}`,
     `Hours: ${COMPANY_HOURS_WEEKDAY}; ${COMPANY_HOURS_SATURDAY}; ${COMPANY_HOURS_SUNDAY}`,
-    "Order seed online at /order. Request a quote at /quote. Contact form at /contact.",
+    `Where to buy seed: ${COMPANY_FACTORY_WAREHOUSE} Seed can also be ordered online at /order or bought from our retail partners.`,
+    "Request a quote at /quote. Contact form at /contact.",
     "Retail partners include Farm and City (0242 251 162) and Electrosales (08677222000) in several Zimbabwean cities.",
-    "Planting guides for maize, wheat, soybeans, groundnuts, and sunflower are at /agronomy. Do not invent agronomic prescriptions; point farmers to /agronomy and sales for variety-specific advice.",
+    "Planting guides for maize, wheat, soybeans, groundnuts and sunflower are at /agronomy. Agronomic knowledge for the crops a user asks about is provided further below.",
     "Crops in catalogue: maize, wheat, soybeans, groundnuts, sunflower, cowpeas, sugar beans, sorghum.",
   ].join("\n")
 }
@@ -152,8 +155,15 @@ export function retrieveCompanyContext(query: string): string {
 
   const sections = [`Always-on company facts:\n${companyFacts()}`]
 
+  const agronomy = retrieveAgronomyContext(query)
+  if (agronomy) {
+    sections.push(agronomy)
+  }
+
   if (matchedProducts.length > 0) {
-    sections.push(`Matching products (retail pack prices in USD where listed):\n${JSON.stringify(matchedProducts)}`)
+    sections.push(
+      `Matching products (retail pack prices in USD where listed; varieties of the same crop often share identical prices - state a shared price once instead of repeating it per variety):\n${JSON.stringify(matchedProducts)}`,
+    )
   } else if (tokens.some((token) => ["seed", "seeds", "product", "variety", "hybrid", "price", "prices"].includes(token))) {
     const snapshot = allProducts.slice(0, 6).map(compactProduct)
     sections.push(`Product snapshot (ask for a crop name for more):\n${JSON.stringify(snapshot)}`)
@@ -174,15 +184,31 @@ export function retrieveCompanyContext(query: string): string {
 }
 
 export function buildChatSystemPrompt(query: string): string {
-  return `You are the ARDA Seeds website assistant for farmers and buyers in Zimbabwe.
+  return `You are the ARDA Seeds website assistant, helping farmers, growers and buyers in Zimbabwe with our seed varieties, pack prices, agronomic advice, services and ordering.
 
-Answer only from the knowledge below. Be concise and practical. Use US$ when quoting listed pack prices.
+HOW TO ORGANISE EVERY REPLY (very important):
+- Use short, scannable lines. Never write long blocks of prose.
+- Never use Markdown tables and never use the pipe "|" character.
+- Open with a one-sentence direct answer.
+- Start list lines with "- " and steps with "1. ", one point per line.
+- Use "**Heading**" on its own line only to group a few related lines.
+- Keep lines short (about 60 characters or less) so they read well in the chat bubble.
+- When several varieties share identical pack prices, list the prices once and say which varieties they cover. Never repeat the same price list per variety.
+- Write money as US$ (for example US$89.00 for a 25kg pack).
+- End with at most one short next step or question. No sign-off or signature.
+- Keep replies under about 120 words unless the user asks for a detailed guide, in which case use headings and short bullets.
 
-Do not invent stock levels, unpublished prices, discounts, delivery fees, or agronomic prescriptions that are not in the knowledge.
+HOW TO ANSWER:
+- The KNOWLEDGE below is your source of truth for ARDA products, prices, services and company details.
+- Be proactive and genuinely helpful: give your best complete answer first.
+- Only hand off to sales for bulk or contract pricing, credit terms, tenders, complaints, order-specific problems, or something genuinely not covered. Do not send people to sales when you can answer.
+- Never invent stock levels, discounts, delivery fees, order statuses or prices that are not in the KNOWLEDGE.
+- If you use widely accepted agronomic practice that is not from our published guides, label it briefly as general guidance.
+- Where to buy: mention our Factory and Warehouse in Chitungwiza for walk-in seed sales, online ordering at /order, or our retail partners - especially when asked where to buy.
+- Give agronomic advice freely when asked about planting, growing, fertilising, weeds, pests, diseases, harvest or storage.
+- Link pages as plain paths, for example /products, /order, /quote, /contact, /agronomy.
 
-If the answer is missing, uncertain, about bulk or custom deals, or needs a human, tell the user to contact sales and include both phone numbers, the email, and /contact.
-
-Handoff wording to use when you cannot answer: ${getSalesHandoffMessage()}
+Only when you truly need a person, use this wording once, briefly: ${getSalesHandoffMessage()}
 
 Knowledge:
 ${retrieveCompanyContext(query)}`
