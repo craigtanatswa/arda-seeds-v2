@@ -12,10 +12,11 @@ export const sorghumProductImage = "/images/sorghum-seed.jpg"
 
 // Maize pack sizes (all varieties share same pricing per pricelist)
 const maizePackSizes = [
-  { size: "2kg", price: 10 },
-  { size: "5kg", price: 19.8 },
-  { size: "10kg", price: 38.3 },
-  { size: "25kg", price: 95.7 },
+  { size: "1kg", price: 4 },
+  { size: "2kg", price: 7 },
+  { size: "5kg", price: 19 },
+  { size: "10kg", price: 37 },
+  { size: "25kg", price: 89 },
 ]
 
 export const maizeProducts: Product[] = [
@@ -89,12 +90,7 @@ export const maizeProducts: Product[] = [
     regions: ["All country's agro-ecological zones"],
     image: maizeProductImage,
     featured: true,
-    packSizes: [
-      { size: "2kg", price: 9.5 },
-      { size: "5kg", price: 19.8 },
-      { size: "10kg", price: 38.3 },
-      { size: "25kg", price: 95.7 },
-    ],
+    packSizes: maizePackSizes,
   },
   {
     id: "zs248a",
@@ -114,12 +110,7 @@ export const maizeProducts: Product[] = [
     regions: ["All regions"],
     image: maizeProductImage,
     featured: false,
-    packSizes: [
-      { size: "2kg", price: 9.5 },
-      { size: "5kg", price: 19.8 },
-      { size: "10kg", price: 38.3 },
-      { size: "25kg", price: 95.7 },
-    ],
+    packSizes: maizePackSizes,
   },
   {
     id: "opv-zm-521",
@@ -269,8 +260,8 @@ export const sunflowerProducts: Product[] = [
     image: sunflowerProductImage,
     featured: true,
     packSizes: [
-      { size: "2kg", price: 8.6 },
-      { size: "5kg", price: 35 },
+      { size: "2kg", price: 13 },
+      { size: "5kg", price: 32 },
     ],
   },
   {
@@ -293,7 +284,7 @@ export const sunflowerProducts: Product[] = [
     image: sunflowerProductImage,
     featured: true,
     packSizes: [
-      { size: "5kg", price: 21.5 },
+      { size: "5kg", price: 32 },
     ],
   },
 ];
@@ -343,7 +334,7 @@ export const cowpeaProducts: Product[] = [
     image: cowpeaProductImage,
     featured: true,
     packSizes: [
-      { size: "2kg", price: 5 },
+      { size: "2kg", price: 6 },
       { size: "10kg", price: 25 },
     ],
   },
@@ -395,8 +386,8 @@ export const sugarBeanProducts: Product[] = [
     image: sugarBeanProductImage,
     featured: true,
     packSizes: [
-      { size: "2kg", price: 8.6 },
-      { size: "5kg", price: 21.5 },
+      { size: "2kg", price: 11 },
+      { size: "5kg", price: 24 },
     ],
   },
 ];
@@ -424,8 +415,8 @@ export const sorghumProducts: Product[] = [
     image: sorghumProductImage,
     featured: true,
     packSizes: [
-      { size: "2kg", price: 5.2 },
-      { size: "5kg", price: 13 },
+      { size: "2kg", price: 7 },
+      { size: "5kg", price: 17 },
       { size: "10kg", price: 26 },
     ],
   },
@@ -450,8 +441,8 @@ export const sorghumProducts: Product[] = [
     image: sorghumProductImage,
     featured: true,
     packSizes: [
-      { size: "2kg", price: 5.2 },
-      { size: "5kg", price: 13 },
+      { size: "2kg", price: 7 },
+      { size: "5kg", price: 17 },
       { size: "10kg", price: 26 },
     ],
   },
