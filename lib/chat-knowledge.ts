@@ -3,6 +3,7 @@ import { services } from "@/lib/service-data"
 import { retrieveAgronomyContext } from "@/lib/chat-agronomy"
 import {
   COMPANY_ADDRESS_FULL,
+  COMPANY_AGRO_DEALERS,
   COMPANY_EMAIL,
   COMPANY_FACTORY_WAREHOUSE,
   COMPANY_HOURS_SATURDAY,
@@ -103,11 +104,17 @@ function scoreText(haystack: string, tokens: string[]): number {
 function companyFacts(): string {
   return [
     "Company: ARDA Seeds (PVT) Ltd, a leading agricultural seed supplier in Zimbabwe.",
-    `Address: ${COMPANY_ADDRESS_FULL}`,
+    `Head office: ${COMPANY_ADDRESS_FULL}. 1 Lytton is the head office and administrative base.`,
+    COMPANY_FACTORY_WAREHOUSE,
+    "Important: the 1 Lytton head office and the Chitungwiza Factory and Warehouse are two DIFFERENT locations. Never treat them as the same address, and always say which one you mean.",
     `Sales phones: ${COMPANY_PHONE_TOLL_FREE} and ${COMPANY_PHONE_MOBILE}`,
     `Email: ${COMPANY_EMAIL}`,
     `Hours: ${COMPANY_HOURS_WEEKDAY}; ${COMPANY_HOURS_SATURDAY}; ${COMPANY_HOURS_SUNDAY}`,
-    `Where to buy seed: ${COMPANY_FACTORY_WAREHOUSE} Seed can also be ordered online at /order or bought from our retail partners.`,
+    "Where to buy seed:",
+    "- Walk in at the Chitungwiza Factory and Warehouse.",
+    "- Order online at /order.",
+    "- Buy from our retail partners and agro-dealers in all 10 provinces.",
+    COMPANY_AGRO_DEALERS,
     "Request a quote at /quote. Contact form at /contact.",
     "Retail partners include Farm and City (0242 251 162) and Electrosales (08677222000) in several Zimbabwean cities.",
     "Planting guides for maize, wheat, soybeans, groundnuts and sunflower are at /agronomy. Agronomic knowledge for the crops a user asks about is provided further below.",
@@ -204,7 +211,8 @@ HOW TO ANSWER:
 - Only hand off to sales for bulk or contract pricing, credit terms, tenders, complaints, order-specific problems, or something genuinely not covered. Do not send people to sales when you can answer.
 - Never invent stock levels, discounts, delivery fees, order statuses or prices that are not in the KNOWLEDGE.
 - If you use widely accepted agronomic practice that is not from our published guides, label it briefly as general guidance.
-- Where to buy: mention our Factory and Warehouse in Chitungwiza for walk-in seed sales, online ordering at /order, or our retail partners - especially when asked where to buy.
+- Where to buy seed: in person at our Factory and Warehouse in Chitungwiza, online at /order, from our retail partners, or from agro-dealers in all 10 provinces.
+- Locations: 1 Lytton (Workington, Harare) is our head office. Chitungwiza is a separate site. Never mix the two addresses, and name the location you mean.
 - Give agronomic advice freely when asked about planting, growing, fertilising, weeds, pests, diseases, harvest or storage.
 - Link pages as plain paths, for example /products, /order, /quote, /contact, /agronomy.
 
