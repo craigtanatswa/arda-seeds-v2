@@ -1,10 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { supabase } from "@/lib/supabaseClient"
+import { DEPARTMENTS } from "@/lib/departments"
 import type { Vacancy } from "@/lib/types"
 import { Briefcase, Plus, Pencil, Trash2, XCircle, FileText, LogOut, Users, FolderOpen, FolderClosed } from "lucide-react"
 import { useAdminRole } from "@/lib/hooks/use-admin-role"
@@ -27,6 +29,15 @@ export default function HRDashboardPage() {
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<HRStats | null>(null)
+  const [departmentFilter, setDepartmentFilter] = useState("all")
+
+  const filteredVacancies = useMemo(
+    () =>
+      departmentFilter === "all"
+        ? vacancies
+        : vacancies.filter((v) => v.department === departmentFilter),
+    [vacancies, departmentFilter]
+  )
 
   useEffect(() => {
     if (!supabase) return
@@ -167,13 +178,31 @@ export default function HRDashboardPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Vacancies</h1>
-          <Button asChild className="bg-green-700 hover:bg-green-800">
-            <Link href="/admin/hr/vacancies/new">
-              <Plus className="h-4 w-4 mr-2" /> New vacancy
-            </Link>
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Department:</span>
+              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                <SelectTrigger className="w-full sm:w-[280px] bg-white">
+                  <SelectValue placeholder="All departments" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All departments</SelectItem>
+                  {DEPARTMENTS.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button asChild className="bg-green-700 hover:bg-green-800">
+              <Link href="/admin/hr/vacancies/new">
+                <Plus className="h-4 w-4 mr-2" /> New vacancy
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -199,7 +228,14 @@ export default function HRDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {vacancies.map((v) => (
+                {filteredVacancies.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 px-4 text-center text-gray-500">
+                      No vacancies match this department.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredVacancies.map((v) => (
                   <tr key={v.id} className="border-b border-gray-100 last:border-0">
                     <td className="py-3 px-4">
                       <Link href={`/careers/${v.id}`} target="_blank" className="text-green-700 hover:underline">
@@ -240,7 +276,8 @@ export default function HRDashboardPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

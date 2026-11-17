@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { supabase } from "@/lib/supabaseClient"
+import { DEPARTMENTS } from "@/lib/departments"
 import type { Application, Vacancy, ApplicationStatus } from "@/lib/types"
 import { ApplicationStatusBadge } from "@/components/admin/status-badge"
 import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
@@ -41,6 +42,7 @@ function HRApplicationsContent() {
   const { alert } = useNotification()
   const searchParams = useSearchParams()
   const vacancyFilter = searchParams.get("vacancy") ?? "all"
+  const departmentFilter = searchParams.get("department") ?? "all"
   const statusFilter = (searchParams.get("status") ?? "all") as ApplicationStatus | "all"
   const [applications, setApplications] = useState<Application[]>([])
   const [vacancies, setVacancies] = useState<Vacancy[]>([])
@@ -66,9 +68,20 @@ function HRApplicationsContent() {
     router.push(`/admin/hr/applications?${params.toString()}`, { scroll: false })
   }
 
+  const setDepartmentFilterUrl = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === "all") params.delete("department")
+    else params.set("department", value)
+    router.push(`/admin/hr/applications?${params.toString()}`, { scroll: false })
+  }
+
   useEffect(() => {
     if (!supabase) return
-    supabase.from("vacancies").select("id, title").order("title").then(({ data }) => setVacancies((data as Vacancy[]) ?? []))
+    supabase
+      .from("vacancies")
+      .select("id, title, department")
+      .order("title")
+      .then(({ data }) => setVacancies((data as Vacancy[]) ?? []))
   }, [])
 
   useEffect(() => {
@@ -83,20 +96,31 @@ function HRApplicationsContent() {
     })
   }, [vacancyFilter])
 
+  const vacancyDepartmentById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const v of vacancies) map.set(v.id, v.department)
+    return map
+  }, [vacancies])
+
+  const departmentFilteredApplications = useMemo(() => {
+    if (departmentFilter === "all") return applications
+    return applications.filter((a) => vacancyDepartmentById.get(a.vacancy_id) === departmentFilter)
+  }, [applications, departmentFilter, vacancyDepartmentById])
+
   const filteredApplications = useMemo(() => {
-    if (statusFilter === "all") return applications
-    return applications.filter((a) => a.status === statusFilter)
-  }, [applications, statusFilter])
+    if (statusFilter === "all") return departmentFilteredApplications
+    return departmentFilteredApplications.filter((a) => a.status === statusFilter)
+  }, [departmentFilteredApplications, statusFilter])
 
   const statusCounts = useMemo(() => {
-    return applications.reduce(
+    return departmentFilteredApplications.reduce(
       (acc, app) => {
         acc[app.status] = (acc[app.status] ?? 0) + 1
         return acc
       },
       {} as Record<ApplicationStatus, number>
     )
-  }, [applications])
+  }, [departmentFilteredApplications])
 
   const selectedVacancyTitle =
     vacancyFilter !== "all"
@@ -155,7 +179,7 @@ function HRApplicationsContent() {
     router.refresh()
   }
 
-  const hasActiveFilters = vacancyFilter !== "all" || statusFilter !== "all"
+  const hasActiveFilters = vacancyFilter !== "all" || departmentFilter !== "all" || statusFilter !== "all"
 
   const clearFilters = () => {
     router.push("/admin/hr/applications")
@@ -201,7 +225,7 @@ function HRApplicationsContent() {
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-sm text-gray-600">
                 <span className="inline-flex items-center gap-1.5">
                   <Users className="h-4 w-4 text-gray-400" />
-                  {applications.length} application{applications.length !== 1 ? "s" : ""}
+                  {departmentFilteredApplications.length} application{departmentFilteredApplications.length !== 1 ? "s" : ""}
                   {statusFilter !== "all" ? " in current view" : ""}
                 </span>
               </div>
@@ -246,6 +270,22 @@ function HRApplicationsContent() {
               </Select>
             </div>
             <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Department:</span>
+              <Select value={departmentFilter} onValueChange={setDepartmentFilterUrl}>
+                <SelectTrigger className="w-[240px] sm:w-[280px] bg-white">
+                  <SelectValue placeholder="All departments" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All departments</SelectItem>
+                  {DEPARTMENTS.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Status:</span>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilterUrl(v as ApplicationStatus | "all")}>
                 <SelectTrigger className="w-[140px] bg-white">
@@ -276,7 +316,7 @@ function HRApplicationsContent() {
             <p className="text-sm text-gray-500">
               {applications.length === 0
                 ? "Applications will appear here once candidates apply through the careers page."
-                : "Try adjusting the vacancy or status filters."}
+                : "Try adjusting the vacancy, department or status filters."}
             </p>
           </div>
         ) : (

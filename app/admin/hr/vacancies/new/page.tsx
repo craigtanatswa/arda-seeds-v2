@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { supabase } from "@/lib/supabaseClient"
 import { useNotification } from "@/components/notification-provider"
+import { DEPARTMENTS } from "@/lib/departments"
 import type { EmploymentType } from "@/lib/types"
 
 const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
@@ -37,6 +38,10 @@ export default function NewVacancyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!supabase) return
+    if (!department) {
+      await alert("Please select a department.", "Error")
+      return
+    }
     setLoading(true)
     const { error } = await supabase.from("vacancies").insert({
       title: title.trim(),
@@ -73,7 +78,18 @@ export default function NewVacancyPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label>Department *</Label>
-            <Input value={department} onChange={(e) => setDepartment(e.target.value)} className={inputClass} required />
+            <Select value={department || undefined} onValueChange={setDepartment}>
+              <SelectTrigger className={inputClass}>
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent>
+                {DEPARTMENTS.map((d) => (
+                  <SelectItem key={d} value={d}>
+                    {d}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label>Location *</Label>
