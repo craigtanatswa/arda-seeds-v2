@@ -2,36 +2,67 @@
 
 The admin centre uses Supabase Auth. Passwords are **not** stored in the app or in the `profiles` table.
 
-## How to set or reset an admin password
+## Option 1: Super admin sets a password directly (recommended)
 
-### Option A: Use the app’s “Forgot password?” flow (recommended)
+A super admin (`profiles.role = 'admin'`) can set any system admin’s password without sending an email.
+
+1. Sign in at **/admin/login**, then open **Manage Admins** (`/admin/admins`).
+2. In the row for the admin, click **Change password**.
+3. Enter the new password twice (minimum **8 characters**) and click **Update password**.
+4. Share the password with the admin securely. They can change it later with **Forgot password?**.
+
+The API endpoint is `PATCH /api/admin/admins/:id` with `{ "password": "..." }`. It requires the
+caller to be a super admin and refuses to change another super admin’s role or password.
+
+## Option 2: The admin resets it themselves (Forgot password)
 
 1. Go to **/admin/login** and click **Forgot password?**
-2. Enter the admin email and submit. A reset email is sent with a link that goes to **/admin/reset-password**.
-3. Click the link in the email, then set a new password on the reset page.
-4. Sign in at **/admin/login** with that email and the new password.
+2. Enter the admin email and submit.
+3. The server sends a **branded reset email** (green ARDA Seeds design) with a one-time link to
+   `/admin/reset-password`.
+4. Clicking the link verifies the token and opens the “Set new password” page.
+5. Sign in at **/admin/login** with the new password.
 
-For this to work, the reset link must be allowed in Supabase:
+### How the reset link is built (and why it no longer goes to localhost)
 
-1. In **Supabase Dashboard** go to **Authentication** → **URL Configuration**.
-2. Under **Redirect URLs**, add:
-   - `http://localhost:3000/admin/reset-password` (local)
-   - `https://yourdomain.com/admin/reset-password` (production)
-3. Save.
+The email is sent by `POST /api/admin/forgot-password`, not by Supabase’s default email sender.
+It generates a recovery token with `auth.admin.generateLink()` and builds the link itself:
 
-### Option B: When you “Send password recovery” from Supabase Dashboard
+```
+{SITE_URL}/admin/reset-password?token_hash=...&type=recovery
+```
 
-If you use **Authentication** → **Users** → **Send password recovery**, the email uses Supabase’s default link. By default it may redirect to your **Site URL** (e.g. the homepage), which is why you were sent to the public site.
+`SITE_URL` is resolved in this order:
 
-To make Dashboard-triggered resets land on the app’s reset page:
+1. `NEXT_PUBLIC_SITE_URL` or `SITE_URL` (set one in production).
+2. `NEXT_PUBLIC_APP_URL`.
+3. Vercel’s production/deployment URL.
+4. The host the request arrived on (`x-forwarded-host` / `host`).
+5. `http://localhost:3000` (local development only).
 
-1. **Authentication** → **URL Configuration**  
-   - Set **Site URL** to your app (e.g. `https://yourdomain.com` or `http://localhost:3000`).  
-   - Add the same **Redirect URLs** as in Option A.
+Any configured value that points at localhost is ignored when the request came from a real domain,
+so copying a local `.env` value into production cannot produce localhost links.
 
-2. **Authentication** → **Email Templates** → **Reset password**  
-   - Change the link so it goes to your reset page with the token.  
-   - Replace the template body with something like:
+Because the link uses `token_hash` and points straight at the app, it does **not** depend on the
+Supabase **Site URL** or the **Redirect URLs** allowlist. The reset page verifies the token with
+`supabase.auth.verifyOtp({ token_hash, type: "recovery" })` and then updates the password.
+
+**Recommended:** add `NEXT_PUBLIC_SITE_URL=https://your-production-domain` to the deployment
+environment so links always use the canonical domain, even when the request is proxied.
+
+### Email delivery
+
+The branded email is sent with the existing SMTP settings (`SMTP_HOST`, `SMTP_PORT`,
+`SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SENDER_EMAIL`). If SMTP is not configured, the endpoint
+falls back to Supabase’s default recovery email so resets still work.
+
+Responses are always generic so the endpoint cannot be used to discover which emails are admins.
+Requests are rate limited to 5 per IP per 15 minutes.
+
+### Optional: Supabase Dashboard recovery emails
+
+If you also use **Authentication** → **Users** → **Send password recovery** from the Supabase
+dashboard, those emails still use Supabase’s template. Update it to match if desired:
 
 ```html
 <h2>Reset your password</h2>
@@ -39,7 +70,7 @@ To make Dashboard-triggered resets land on the app’s reset page:
 <p><a href="{{ .SiteURL }}/admin/reset-password?token_hash={{ .TokenHash }}&type=recovery">Set new password</a></p>
 ```
 
-Then both the app’s “Forgot password?” and the Dashboard “Send password recovery” will send users to **/admin/reset-password** to set their password in the UI.
+Set **Authentication** → **URL Configuration** → **Site URL** to the production domain as well.
 
 ### Creating a new admin user with a password
 
@@ -52,4 +83,5 @@ Then both the app’s “Forgot password?” and the Dashboard “Send password 
    ON CONFLICT (id) DO UPDATE SET role = 'admin';
    ```
 
-They can sign in at **/admin/login** with that email and password. If you didn’t set a password when creating the user, use **Forgot password?** (Option A) or the custom Recovery template (Option B) so they can set one via the reset page.
+They can sign in at **/admin/login** with that email and password. If you didn’t set a password
+when creating the user, use **Forgot password?** so they can set one via the reset page.

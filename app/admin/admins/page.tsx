@@ -22,9 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { supabase } from "@/lib/supabaseClient"
-import { ADMIN_SYSTEMS, getSystemByRole } from "@/lib/admin-systems"
+import { ADMIN_SYSTEMS, getSystemByRole, MIN_ADMIN_PASSWORD_LENGTH } from "@/lib/admin-systems"
 import { useNotification } from "@/components/notification-provider"
-import { Plus, LogOut, LayoutDashboard, Shield, Trash2 } from "lucide-react"
+import { Plus, LogOut, LayoutDashboard, Shield, Trash2, KeyRound } from "lucide-react"
 
 type AdminRow = { id: string; email: string | null; role: string }
 
@@ -42,16 +42,21 @@ export default function ManageAdminsPage() {
   const [editId, setEditId] = useState<string | null>(null)
   const [editRole, setEditRole] = useState("")
   const [editSubmitting, setEditSubmitting] = useState(false)
+  const [passwordId, setPasswordId] = useState<string | null>(null)
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false)
 
   useEffect(() => {
     if (!supabase) return
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const client = supabase
+    client.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.replace("/admin/login")
         return
       }
       setAccessToken(session.access_token)
-      supabase
+      client
         .from("profiles")
         .select("role")
         .eq("id", session.user.id)
@@ -128,6 +133,42 @@ export default function ManageAdminsPage() {
     }
   }
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!accessToken || !passwordId) return
+    if (newPassword.length < MIN_ADMIN_PASSWORD_LENGTH) {
+      await alert(`Password must be at least ${MIN_ADMIN_PASSWORD_LENGTH} characters.`, "Error")
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      await alert("Passwords do not match.", "Error")
+      return
+    }
+    setPasswordSubmitting(true)
+    try {
+      const target = admins.find((a) => a.id === passwordId)
+      const res = await fetch(`/api/admin/admins/${passwordId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ password: newPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        await alert(data.error ?? "Failed to change password", "Error")
+        return
+      }
+      setPasswordId(null)
+      setNewPassword("")
+      setConfirmPassword("")
+      await alert(
+        `Password updated. ${target?.email ?? "The admin"} can now sign in with the new password.`,
+        "Password updated"
+      )
+    } finally {
+      setPasswordSubmitting(false)
+    }
+  }
+
   const handleSignOut = async () => {
     await supabase?.auth.signOut()
     router.replace("/admin/login")
@@ -199,6 +240,17 @@ export default function ManageAdminsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            setPasswordId(a.id)
+                            setNewPassword("")
+                            setConfirmPassword("")
+                          }}
+                        >
+                          <KeyRound className="h-4 w-4 mr-1" /> Change password
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
                             setEditId(a.id)
                             setEditRole(a.role)
                           }}
@@ -244,13 +296,13 @@ export default function ManageAdminsPage() {
               />
             </div>
             <div>
-              <Label>Password (optional; min 6 characters)</Label>
+              <Label>Password (optional; min 8 characters)</Label>
               <PasswordInput
                 value={addPassword}
                 onChange={(e) => setAddPassword(e.target.value)}
                 placeholder="Leave blank to send invite"
                 className="mt-1"
-                minLength={6}
+                minLength={MIN_ADMIN_PASSWORD_LENGTH}
               />
             </div>
             <div>
@@ -314,6 +366,56 @@ export default function ManageAdminsPage() {
               </Button>
             </DialogFooter>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!passwordId} onOpenChange={(open) => !open && setPasswordId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change admin password</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Set a new password for{" "}
+              <strong className="text-gray-900">
+                {admins.find((a) => a.id === passwordId)?.email ?? "this admin"}
+              </strong>
+              . Share it with them securely; they can change it later using “Forgot password?”.
+            </p>
+            <div>
+              <Label>New password *</Label>
+              <PasswordInput
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mt-1"
+                required
+                minLength={MIN_ADMIN_PASSWORD_LENGTH}
+                autoComplete="new-password"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                At least {MIN_ADMIN_PASSWORD_LENGTH} characters.
+              </p>
+            </div>
+            <div>
+              <Label>Confirm password *</Label>
+              <PasswordInput
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1"
+                required
+                minLength={MIN_ADMIN_PASSWORD_LENGTH}
+                autoComplete="new-password"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPasswordId(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={passwordSubmitting} className="bg-green-700 hover:bg-green-800">
+                {passwordSubmitting ? "Updating..." : "Update password"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

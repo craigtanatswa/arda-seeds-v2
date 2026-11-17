@@ -37,6 +37,9 @@ export const ADMIN_SYSTEMS: AdminSystem[] = [
 /** Role that has access to all systems (super admin). */
 export const SUPER_ADMIN_ROLE = "admin"
 
+/** Minimum password length for admin accounts. */
+export const MIN_ADMIN_PASSWORD_LENGTH = 8
+
 /** All roles that are "system admins" (limited to one system). Used for listing and assigning. */
 export const SYSTEM_ADMIN_ROLES = ADMIN_SYSTEMS.map((s) => s.role)
 

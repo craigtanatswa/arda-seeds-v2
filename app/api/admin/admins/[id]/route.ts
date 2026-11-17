@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabaseServer"
-import { SYSTEM_ADMIN_ROLES } from "@/lib/admin-systems"
+import { MIN_ADMIN_PASSWORD_LENGTH, SYSTEM_ADMIN_ROLES } from "@/lib/admin-systems"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -24,7 +24,12 @@ async function requireSuperAdmin(request: NextRequest): Promise<{ ok: true } | {
   return { ok: true }
 }
 
-/** PATCH: Update a system admin's role (or revoke by setting to "user"). */
+/**
+ * PATCH: Update a system admin.
+ * - `{ role }` changes access (use "user" to revoke).
+ * - `{ password }` sets a new login password for that admin.
+ * Both can be supplied together.
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -36,30 +41,64 @@ export async function PATCH(
   const { id } = await params
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
 
-  let body: { role?: string }
+  let body: { role?: string | null; password?: string }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
-  const { role } = body
-  const newRole = role === "user" || role === null || role === undefined
-    ? "user"
-    : SYSTEM_ADMIN_ROLES.includes(role)
-      ? role
-      : undefined
-  if (newRole === undefined && role !== undefined) {
-    return NextResponse.json({ error: "role must be 'user' or one of: " + SYSTEM_ADMIN_ROLES.join(", ") }, { status: 400 })
+
+  const hasRole = Object.prototype.hasOwnProperty.call(body, "role") && body.role !== undefined
+  const hasPassword = typeof body.password === "string" && body.password.length > 0
+
+  if (!hasRole && !hasPassword) {
+    return NextResponse.json({ error: "Supply a role and/or a password" }, { status: 400 })
   }
-  if (newRole === undefined) {
-    return NextResponse.json({ error: "role is required" }, { status: 400 })
+  if (hasPassword && body.password!.length < MIN_ADMIN_PASSWORD_LENGTH) {
+    return NextResponse.json(
+      { error: `Password must be at least ${MIN_ADMIN_PASSWORD_LENGTH} characters` },
+      { status: 400 }
+    )
+  }
+
+  const { role } = body
+  let newRole: string | undefined
+  if (hasRole) {
+    newRole =
+      role === "user" || role === null || role === undefined
+        ? "user"
+        : SYSTEM_ADMIN_ROLES.includes(role)
+          ? role
+          : undefined
+    if (newRole === undefined) {
+      return NextResponse.json(
+        { error: "role must be 'user' or one of: " + SYSTEM_ADMIN_ROLES.join(", ") },
+        { status: 400 }
+      )
+    }
   }
 
   const { data: target } = await supabaseServer.from("profiles").select("role").eq("id", id).single()
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 })
-  if (target.role === "admin") return NextResponse.json({ error: "Cannot change super admin role" }, { status: 403 })
+  if (target.role === "admin") {
+    return NextResponse.json({ error: "Cannot change a super admin's role or password" }, { status: 403 })
+  }
 
-  const { error } = await supabaseServer.from("profiles").update({ role: newRole }).eq("id", id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json({ id, role: newRole })
+  if (hasPassword) {
+    const { error: passwordError } = await supabaseServer.auth.admin.updateUserById(id, {
+      password: body.password,
+    })
+    if (passwordError) return NextResponse.json({ error: passwordError.message }, { status: 400 })
+  }
+
+  if (newRole !== undefined) {
+    const { error } = await supabaseServer.from("profiles").update({ role: newRole }).eq("id", id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+
+  return NextResponse.json({
+    id,
+    role: newRole ?? target.role,
+    passwordUpdated: hasPassword,
+  })
 }

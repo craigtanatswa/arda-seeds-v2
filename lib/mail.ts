@@ -12,6 +12,16 @@ export function createMailTransporter() {
   })
 }
 
+/** True when the SMTP settings needed to send mail are present. */
+export function isMailConfigured(): boolean {
+  return Boolean(
+    process.env.SMTP_HOST &&
+      process.env.SMTP_USER &&
+      process.env.SMTP_PASS &&
+      process.env.SENDER_EMAIL
+  )
+}
+
 export const SALES_INBOX = "customerexperience@ardaseeds.co.zw"
 
 export function senderFrom(name = "ARDA Seeds") {

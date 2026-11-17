@@ -5,7 +5,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { supabase } from "@/lib/supabaseClient"
 
 const inputClass =
   "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
@@ -21,12 +20,15 @@ export default function AdminForgotPasswordPage() {
     setError("")
     setLoading(true)
     try {
-      if (!supabase) throw new Error("Supabase not configured")
-      const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/admin/reset-password` : ""
-      const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo,
+      // The server sends a branded email whose link always points at the
+      // live site's /admin/reset-password page (never Supabase's Site URL).
+      const res = await fetch("/api/admin/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
       })
-      if (err) throw err
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error ?? "Failed to send reset email.")
       setSent(true)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send reset email.")
@@ -42,8 +44,8 @@ export default function AdminForgotPasswordPage() {
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center">
             <h1 className="text-xl font-bold text-gray-900 mb-2">Check your email</h1>
             <p className="text-gray-600 mb-6">
-              If an account exists for <strong>{email}</strong>, we’ve sent a link to set a new password. Click the
-              link in that email to open the password reset page.
+              If an admin account exists for <strong>{email}</strong>, we’ve sent a link to set a new password. Click
+              the link in that email to open the password reset page.
             </p>
             <p className="text-sm text-gray-500 mb-6">
               If you don’t see it, check spam. The link usually expires in about an hour.
@@ -75,7 +77,6 @@ export default function AdminForgotPasswordPage() {
                 className={inputClass}
                 required
                 autoComplete="email"
-                placeholder="admin@ardaseeds.co.zw"
               />
             </div>
             {error && (

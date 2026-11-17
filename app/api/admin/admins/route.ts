@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabaseServer"
-import { SYSTEM_ADMIN_ROLES } from "@/lib/admin-systems"
+import { MIN_ADMIN_PASSWORD_LENGTH, SYSTEM_ADMIN_ROLES } from "@/lib/admin-systems"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -67,7 +67,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "role must be one of: " + SYSTEM_ADMIN_ROLES.join(", ") }, { status: 400 })
   }
 
-  const passwordOrUndefined = typeof password === "string" && password.length >= 6 ? password : undefined
+  const passwordOrUndefined =
+    typeof password === "string" && password.length >= MIN_ADMIN_PASSWORD_LENGTH ? password : undefined
+  if (typeof password === "string" && password.length > 0 && password.length < MIN_ADMIN_PASSWORD_LENGTH) {
+    return NextResponse.json(
+      { error: `Password must be at least ${MIN_ADMIN_PASSWORD_LENGTH} characters` },
+      { status: 400 }
+    )
+  }
   const { data: newUser, error: createError } = await supabaseServer.auth.admin.createUser({
     email: email.trim(),
     password: passwordOrUndefined ?? undefined,

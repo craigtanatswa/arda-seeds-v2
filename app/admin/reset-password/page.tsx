@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabaseClient"
+import { MIN_ADMIN_PASSWORD_LENGTH } from "@/lib/admin-systems"
 
 const inputClass =
   "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
@@ -14,6 +15,7 @@ const inputClass =
 function AdminResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const started = useRef(false)
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
   const [loading, setLoading] = useState(false)
@@ -21,29 +23,75 @@ function AdminResetPasswordContent() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    const run = async () => {
-      if (!supabase) return
-      const tokenHash = searchParams.get("token_hash")
-      const type = searchParams.get("type")
-      if (tokenHash && type === "recovery") {
-        const { error: err } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" })
-        if (err) {
-          setError("This link is invalid or has expired. Request a new reset link.")
-          setReady(true)
-          return
-        }
-        setReady(true)
-        return
-      }
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        setReady(true)
-        return
-      }
-      setError("No valid reset session. Use the link from your email or request a new one.")
+    // Verify the one-time token only once. Re-running would consume the token
+    // again and show a false "expired link" error after a successful verify.
+    if (started.current) return
+    started.current = true
+
+    let cancelled = false
+
+    const finish = (message?: string) => {
+      if (cancelled) return
+      if (message) setError(message)
       setReady(true)
     }
+
+    const run = async () => {
+      if (!supabase) {
+        finish("Password reset is unavailable because authentication is not configured.")
+        return
+      }
+
+      // Supabase can return errors in the query string or in the URL hash.
+      const hashParams = new URLSearchParams(
+        typeof window !== "undefined" ? window.location.hash.replace(/^#/, "") : ""
+      )
+      const errorDescription =
+        searchParams.get("error_description") ||
+        hashParams.get("error_description") ||
+        searchParams.get("error") ||
+        hashParams.get("error")
+      if (errorDescription) {
+        finish("This link is invalid or has expired. Request a new reset link.")
+        return
+      }
+
+      const tokenHash = searchParams.get("token_hash") || hashParams.get("token_hash")
+      if (tokenHash) {
+        const { error: err } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "recovery",
+        })
+        if (err) {
+          finish("This link is invalid or has expired. Request a new reset link.")
+        } else {
+          finish()
+        }
+        return
+      }
+
+      // Supabase may place the recovery session in the URL hash. The browser
+      // client parses it automatically, so poll briefly for the session.
+      for (let attempt = 0; attempt < 12; attempt += 1) {
+        if (cancelled) return
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        if (session) {
+          finish()
+          return
+        }
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+
+      finish("No valid reset session. Use the link from your email or request a new one.")
+    }
+
     run()
+
+    return () => {
+      cancelled = true
+    }
   }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,8 +101,8 @@ function AdminResetPasswordContent() {
       setError("Passwords do not match.")
       return
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.")
+    if (password.length < MIN_ADMIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_ADMIN_PASSWORD_LENGTH} characters.`)
       return
     }
     setLoading(true)
@@ -75,7 +123,7 @@ function AdminResetPasswordContent() {
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-green-50 to-white">
-        <div className="text-gray-500">Loading…</div>
+        <div className="text-gray-500">Checking your reset link…</div>
       </div>
     )
   }
@@ -116,9 +164,12 @@ function AdminResetPasswordContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputClass}
                 required
-                minLength={6}
+                minLength={MIN_ADMIN_PASSWORD_LENGTH}
                 autoComplete="new-password"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                At least {MIN_ADMIN_PASSWORD_LENGTH} characters.
+              </p>
             </div>
             <div>
               <Label className="text-gray-700">Confirm password</Label>
@@ -127,7 +178,7 @@ function AdminResetPasswordContent() {
                 onChange={(e) => setConfirm(e.target.value)}
                 className={inputClass}
                 required
-                minLength={6}
+                minLength={MIN_ADMIN_PASSWORD_LENGTH}
                 autoComplete="new-password"
               />
             </div>
