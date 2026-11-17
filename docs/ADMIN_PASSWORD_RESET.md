@@ -47,7 +47,7 @@ Because the link uses `token_hash` and points straight at the app, it does **not
 Supabase **Site URL** or the **Redirect URLs** allowlist. The reset page verifies the token with
 `supabase.auth.verifyOtp({ token_hash, type: "recovery" })` and then updates the password.
 
-**Recommended:** add `NEXT_PUBLIC_SITE_URL=https://your-production-domain` to the deployment
+**Recommended:** add `NEXT_PUBLIC_SITE_URL=https://ardaseeds.co.zw` to the deployment
 environment so links always use the canonical domain, even when the request is proxied.
 
 ### Email delivery
